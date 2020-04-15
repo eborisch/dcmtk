@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2007-2018, OFFIS e.V.
+ *  Copyright (C) 2007-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -534,6 +534,20 @@ OFCondition DJLSEncoderBase::losslessRawEncode(
     result = offsetTable->createOffsetTable(offsetList);
   }
 
+  // adjust planar configuration
+  if (result.good())
+  {
+    if (photometricInterpretation == "RGB" || photometricInterpretation == "YBR_FULL")
+    {
+      // CP 1843 requires a planar configuration value of 0 for these color models
+      result = dataset->putAndInsertUint16(DCM_PlanarConfiguration, 0);
+    }
+    else if (samplesPerPixel == 1)
+    {
+      delete dataset->remove(DCM_PlanarConfiguration);
+    }
+  }
+
   if (compressedSize > 0) compressionRatio = uncompressedSize / compressedSize;
 
   // byte swap pixel data back to local endian if necessary
@@ -543,6 +557,68 @@ OFCondition DJLSEncoderBase::losslessRawEncode(
   }
 
   return result;
+}
+
+// static helper functions for DJLSEncoderBase::setCustomParameters().
+static long setcp_clamp(long i, long j, long MAXVAL)
+{
+    if (i > MAXVAL || i < j)
+        return j;
+
+    return i;
+}
+
+long setcp_min(long a, long b)
+{
+  return (((a) < (b)) ? (a) : (b));
+}
+
+void DJLSEncoderBase::setCustomParameters(
+  JlsCustomParameters& custom,
+  Uint16 bitsAllocated,
+  Uint16 nearLosslessDeviation,
+  const DJLSCodecParameter *djcp)
+{
+  // first check if all parameters are set to default (which will be the most common case).
+  // In this case we will set everything in the custom struct to zero as well.
+  if ((djcp->getT1() == 0) && (djcp->getT2() == 0) && (djcp->getT3() == 0) && (djcp->getReset() == 0))
+  {
+      custom.T1 = 0;
+      custom.T2 = 0;
+      custom.T3 = 0;
+      custom.RESET = 0;
+      custom.MAXVAL = 0;
+      return;
+  }
+
+  // unfortunately, CharLS either takes all or none of the parameters
+  // in the "custom" struct. So if we change any of them, we need to provide
+  // legal values for all of them. The function in CharLS that computes these
+  // values is not public, so we basically have to re-implement it here.
+
+  const int BASIC_T1       = 3;
+  const int BASIC_T2       = 7;
+  const int BASIC_T3       = 21;
+  const long BASIC_RESET   = 64;
+
+  long MAXVAL = (1 << bitsAllocated) - 1;
+  long FACTOR = (setcp_min(MAXVAL, 4095) + 128)/256;
+  long NEAR = nearLosslessDeviation;
+
+  custom.MAXVAL = MAXVAL;
+
+  if (djcp->getT1() > 0) custom.T1 = djcp->getT1(); else
+    custom.T1 = setcp_clamp(FACTOR * (BASIC_T1 - 2) + 2 + 3*NEAR, NEAR + 1, MAXVAL);
+
+  if (djcp->getT2() > 0) custom.T2 = djcp->getT2(); else
+    custom.T2 = setcp_clamp(FACTOR * (BASIC_T2 - 3) + 3 + 5*NEAR, custom.T1, MAXVAL);
+
+  if (djcp->getT3() > 0) custom.T3 = djcp->getT3(); else
+    custom.T3 = setcp_clamp(FACTOR * (BASIC_T3 - 4) + 4 + 7*NEAR, custom.T2, MAXVAL);
+
+  if (djcp->getReset() > 0) custom.RESET = djcp->getReset();
+    else custom.RESET = BASIC_RESET;
+
 }
 
 OFCondition DJLSEncoderBase::compressRawFrame(
@@ -562,7 +638,6 @@ OFCondition DJLSEncoderBase::compressRawFrame(
   Uint16 bytesAllocated = bitsAllocated / 8;
   Uint32 frameSize = width*height*bytesAllocated*samplesPerPixel;
   Uint32 fragmentSize = djcp->getFragmentSize();
-  OFBool opt_use_custom_options = djcp->getUseCustomOptions();
   JlsParameters jls_params;
   Uint8 *frameBuffer = NULL;
 
@@ -575,19 +650,11 @@ OFCondition DJLSEncoderBase::compressRawFrame(
   jls_params.outputBgr = false;
   // No idea what this one does, but I don't think DICOM says anything about it
   jls_params.colorTransform = 0;
-
   // Unset: jls_params.jfif (thumbnail, dpi)
 
-  if (opt_use_custom_options)
-  {
-    jls_params.custom.T1 = djcp->getT1();
-    jls_params.custom.T2 = djcp->getT2();
-    jls_params.custom.T3 = djcp->getT3();
-    jls_params.custom.RESET = djcp->getReset();
-    // not set: jls_params.custom.MAXVAL
-    // MAXVAL is the maximum sample value in the image, it helps the compression
-    // if it's used (I think...)
-  }
+  // set parameters T1, T2, T3, MAXVAL and RESET.
+  // compressRawFrame() is only used for true lossless mode, so the near-lossless deviation is always 0 here.
+  setCustomParameters(jls_params.custom, bitsAllocated, 0, djcp);
 
   // Theoretically we could support any samplesPerPixel value, but for now we
   // only accept these (charls is a little picky for other values).
@@ -670,7 +737,7 @@ OFCondition DJLSEncoderBase::compressRawFrame(
     if (result.good())
     {
       compressedSize = OFstatic_cast(unsigned long, bytesWritten);
-      fixPaddingIfNecessary(OFstatic_cast(Uint8 *, buffer), size, compressedSize);
+      fixPaddingIfNecessary(OFstatic_cast(Uint8 *, buffer), size, compressedSize, djcp->getUseFFbitstreamPadding());
       result = pixelSequence->storeCompressedFrame(offsetList, buffer, compressedSize, fragmentSize);
     }
 
@@ -841,6 +908,20 @@ OFCondition DJLSEncoderBase::losslessCookedEncode(
         result = dataset->putAndInsertUint16(DCM_BitsAllocated, 8);
     if (result.good()) result = dataset->putAndInsertUint16(DCM_BitsStored, bitsPerSample);
     if (result.good()) result = dataset->putAndInsertUint16(DCM_HighBit, bitsPerSample-1);
+    if (result.good())
+    {
+      if (photometricInterpretation == "RGB" || photometricInterpretation == "YBR_FULL")
+      {
+        // CP 1843 requires a planar configuration value of 0 for these color models
+        result = dataset->putAndInsertUint16(DCM_PlanarConfiguration, 0);
+      }
+      else
+      {
+        // this is monochrome since we have ruled out all other photometric interpretations
+        // at the start of this method
+        delete dataset->remove(DCM_PlanarConfiguration);
+      }
+    }
   }
 
   if (compressedSize > 0) compressionRatio = uncompressedSize / compressedSize;
@@ -868,7 +949,6 @@ OFCondition DJLSEncoderBase::compressCookedFrame(
   if ((depth < 1) || (depth > 16)) return EC_JLSUnsupportedBitDepth;
 
   Uint32 fragmentSize = djcp->getFragmentSize();
-  OFBool opt_use_custom_options = djcp->getUseCustomOptions();
 
   const DiPixel *dinter = dimage->getInterData();
   if (dinter == NULL) return EC_IllegalCall;
@@ -1005,30 +1085,11 @@ OFCondition DJLSEncoderBase::compressCookedFrame(
 
   // This was already checked for a sane value above
   jls_params.components = samplesPerPixel;
-  switch(dinter->getRepresentation())
-  {
-    case EPR_Uint8:
-    case EPR_Sint8:
-      jls_params.bitspersample = 8;
-      break;
-    case EPR_Uint16:
-    case EPR_Sint16:
-      jls_params.bitspersample = 16;
-      break;
-    default:
-      // Everything else was already handled above and can't happen here
-      break;
-  }
 
   // Unset: jls_params.jfif (thumbnail, dpi)
 
-  if (opt_use_custom_options)
-  {
-    jls_params.custom.T1 = djcp->getT1();
-    jls_params.custom.T2 = djcp->getT2();
-    jls_params.custom.T3 = djcp->getT3();
-    jls_params.custom.RESET = djcp->getReset();
-  }
+  // set parameters T1, T2, T3, MAXVAL and RESET
+  setCustomParameters(jls_params.custom, depth, nearLosslessDeviation, djcp);
 
   switch (djcp->getJplsInterleaveMode())
   {
@@ -1078,7 +1139,7 @@ OFCondition DJLSEncoderBase::compressCookedFrame(
   {
     // 'compressed_buffer_size' now contains the size of the compressed data in buffer
     compressedSize = OFstatic_cast(unsigned long, bytesWritten);
-    fixPaddingIfNecessary(OFstatic_cast(Uint8 *, buffer), compressed_buffer_size, compressedSize);
+    fixPaddingIfNecessary(OFstatic_cast(Uint8 *, buffer), compressed_buffer_size, compressedSize, djcp->getUseFFbitstreamPadding());
     result = pixelSequence->storeCompressedFrame(offsetList, compressed_buffer, compressedSize, fragmentSize);
   }
 
@@ -1143,7 +1204,8 @@ OFCondition DJLSEncoderBase::convertToSampleInterleaved(
 void DJLSEncoderBase::fixPaddingIfNecessary(
     Uint8 *buffer,
     size_t bufSize,
-    unsigned long &bytesWritten)
+    unsigned long &bytesWritten,
+    OFBool useFFpadding)
 {
   // check if an odd number of bytes was written and the buffer
   // has space for the needed pad byte (which should in practice
@@ -1153,18 +1215,20 @@ void DJLSEncoderBase::fixPaddingIfNecessary(
     // first write a zero pad byte after the end of the JPEG-LS bitstream
     buffer[bytesWritten++] = 0;
 
-#ifndef DISABLE_FF_JPEG_BITSTREAM_PADDING
-    // look for the EOI marker
-    if ((bytesWritten > 2) && (buffer[bytesWritten-3] == 0xFF) && (buffer[bytesWritten-2] == 0xD9))
+    // check if we are expected to use an extended EOI marker for padding
+    if (useFFpadding)
     {
-      // we now have ff/d9/00 at the end of the JPEG bitstream,
-      // i.e. an end of image (EOI) marker followed by a pad byte.
-      // Replace this with ff/ff/d9, which is an "extended" EOI marker
-      // ending on an even byte boundary.
-      buffer[bytesWritten-2] = 0xFF;
-      buffer[bytesWritten-1] = 0xD9;
+      // look for the EOI marker
+      if ((bytesWritten > 2) && (buffer[bytesWritten-3] == 0xFF) && (buffer[bytesWritten-2] == 0xD9))
+      {
+        // we now have ff/d9/00 at the end of the JPEG bitstream,
+        // i.e. an end of image (EOI) marker followed by a pad byte.
+        // Replace this with ff/ff/d9, which is an "extended" EOI marker
+        // ending on an even byte boundary.
+        buffer[bytesWritten-2] = 0xFF;
+        buffer[bytesWritten-1] = 0xD9;
+      }
     }
   }
-#endif
   return;
 }

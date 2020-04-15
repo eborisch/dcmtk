@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2007-2017, OFFIS e.V.
+ *  Copyright (C) 2007-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -199,6 +199,12 @@ OFCondition I2DJpegSource::readPixelData(Uint16& rows,
   cols = width;
   samplesPerPixel = spp;
   bitsAlloc = bps;
+  // Some output formats do not allow 12 bit at all, so it is more safe to
+  // use 16 bit for Bits Allocated (and therefore for Bits Stored, see below)
+  if (bitsAlloc == 12)
+  {
+    bitsAlloc = 16;
+  }
   bitsStored = bitsAlloc;
   highBit = OFstatic_cast(Uint16, bitsStored - 1);
   if (samplesPerPixel == 1)
@@ -820,30 +826,34 @@ OFCondition I2DJpegSource::skipVariable()
 
 OFCondition I2DJpegSource::isJPEGEncodingSupported(const E_JPGMARKER& jpegEncoding) const
 {
+  OFCondition result;
   DCMDATA_LIBI2D_DEBUG("I2DJpegSource: Checking whether JPEG encoding is supported");
   DCMDATA_LIBI2D_DEBUG("I2DJpegSource:   Encoding: " << jpegMarkerToString(jpegEncoding));
   switch (jpegEncoding)
   {
     case E_JPGMARKER_SOF0: // Baseline
-      return EC_Normal;
+      result = EC_Normal;
+      break;
     case E_JPGMARKER_SOF1: // Extended sequential
       if (!m_disableExtSeqTs)
-        return EC_Normal;
+        result = EC_Normal;
       else
-        return makeOFCondition(OFM_dcmdata, 18, OF_error, "Unable to convert: Extended sequential JPEG coding found but support disabled");
+        result = makeOFCondition(OFM_dcmdata, 18, OF_error, "Unable to convert: Extended sequential JPEG coding found but support disabled");
+      break;
     case E_JPGMARKER_SOF2: // Progressive
       if (!m_disableProgrTs)
-        return EC_Normal;
+        result = EC_Normal;
       else
-        return makeOFCondition(OFM_dcmdata, 18, OF_error, "Unable to convert: Progressive JPEG coding found but disabled");
+        result = makeOFCondition(OFM_dcmdata, 18, OF_error, "Unable to convert: Progressive JPEG coding found but disabled");
+      break;
     // SOF3: Lossless, SOF5-7: Hierarchical (differential), SOF9-15: Arithmetic coding, all other
     default:
       OFString errMsg("JPEG data with encoding: '");
       errMsg += jpegMarkerToString(jpegEncoding);
       errMsg += "' not supported";
-      return makeOFCondition(OFM_dcmdata, 18, OF_error, errMsg.c_str());
+      result = makeOFCondition(OFM_dcmdata, 18, OF_error, errMsg.c_str());
   }
-  return EC_Normal;
+  return result;
 }
 
 

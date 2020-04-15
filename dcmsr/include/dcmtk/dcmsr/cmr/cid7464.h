@@ -1,12 +1,12 @@
 /*
  *
- *  Copyright (C) 2015-2018, J. Riesmeier, Oldenburg, Germany
+ *  Copyright (C) 2015-2020, J. Riesmeier, Oldenburg, Germany
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  Header file for class CID7464_GeneralRegionOfInterestMeasurementModifiers
  *
- *  Generated automatically from DICOM PS 3.16-2018d
- *  File created on 2018-09-27 16:57:31 by J. Riesmeier
+ *  Generated automatically from DICOM PS 3.16-2020a
+ *  File created on 2020-02-04 12:04:03 by J. Riesmeier
  *
  */
 
@@ -40,19 +40,19 @@ class DCMTK_CMR_EXPORT CID7464_GeneralRegionOfInterestMeasurementModifiers
      */
     enum EnumType
     {
-        /// (G-A437,SRT,"Maximum"), included from CID 3488
+        /// (56851009,SCT,"Maximum"), included from CID 3488
         Maximum,
-        /// (R-404FB,SRT,"Minimum"), included from CID 3488
+        /// (255605001,SCT,"Minimum"), included from CID 3488
         Minimum,
-        /// (R-00317,SRT,"Mean"), included from CID 3488
+        /// (373098007,SCT,"Mean"), included from CID 3488
         Mean,
-        /// (R-10047,SRT,"Standard Deviation")
+        /// (386136009,SCT,"Standard Deviation")
         StandardDeviation,
-        /// (R-40507,SRT,"Total")
+        /// (255619001,SCT,"Total")
         Total,
-        /// (R-00319,SRT,"Median")
+        /// (373099004,SCT,"Median")
         Median,
-        /// (R-0032E,SRT,"Mode")
+        /// (373100007,SCT,"Mode")
         Mode,
         /// (126031,DCM,"Peak Value Within ROI")
         PeakValueWithinROI,

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2007-2017, OFFIS e.V.
+ *  Copyright (C) 2007-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -31,6 +31,7 @@
 class DJLSRepresentationParameter;
 class DJLSCodecParameter;
 class DicomImage;
+struct JlsCustomParameters;
 
 /** abstract codec class for JPEG-LS encoders.
  *  This abstract class contains most of the application logic
@@ -350,11 +351,27 @@ private:
    *  @param bufSize size of the buffer in bytes
    *  @param bytesWritten number of bytes written to buffer; value is increased
    *   if this method adds a pad byte.
+   *  @param useFFpadding true if a standard-conforming extended EOI marker
+   *   should be used for padding an odd-length bitstream
    */
   static void fixPaddingIfNecessary(
     Uint8 *buffer,
     size_t bufSize,
-    unsigned long &bytesWritten);
+    unsigned long &bytesWritten,
+    OFBool useFFpadding);
+
+  /** compute the parameters for the CharLS JlsCustomParameters struct, which maintains
+   *  the JPEG-LS encoding process parameters T1, T2, T3, MAXVAL and RESET.
+   *  @param custom reference to initialized JlsCustomParameters object, values filled by this method
+   *  @param bitsAllocated number of bits allocated
+   *  @param nearLosslessDeviation parameter NEAR of near-lossless mode
+   *  @param djcp parameters for the codec
+   */
+  static void setCustomParameters(
+    JlsCustomParameters& custom,
+    Uint16 bitsAllocated,
+    Uint16 nearLosslessDeviation,
+    const DJLSCodecParameter *djcp);
 };
 
 

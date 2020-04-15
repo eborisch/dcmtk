@@ -1,12 +1,12 @@
 /*
  *
- *  Copyright (C) 2015-2018, J. Riesmeier, Oldenburg, Germany
+ *  Copyright (C) 2015-2020, J. Riesmeier, Oldenburg, Germany
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  Header file for class CID7452_OrganizationalRoles
  *
- *  Generated automatically from DICOM PS 3.16-2018d
- *  File created on 2018-09-27 16:57:28 by J. Riesmeier
+ *  Generated automatically from DICOM PS 3.16-2020a
+ *  File created on 2020-02-04 12:03:59 by J. Riesmeier
  *
  */
 
@@ -40,9 +40,9 @@ class DCMTK_CMR_EXPORT CID7452_OrganizationalRoles
      */
     enum EnumType
     {
-        /// (J-0016E,SRT,"Medical Practitioner")
+        /// (158965000,SCT,"Medical Practitioner")
         MedicalPractitioner,
-        /// (J-004E8,SRT,"Physician")
+        /// (309343006,SCT,"Physician")
         Physician,
         /// (128670,DCM,"Head of Radiology")
         HeadOfRadiology,
@@ -56,33 +56,33 @@ class DCMTK_CMR_EXPORT CID7452_OrganizationalRoles
         HeadOfCardiology,
         /// (128673,DCM,"Administrator of Radiology Department")
         AdministratorOfRadiologyDepartment,
-        /// (J-07100,SRT,"Nurse")
+        /// (106292003,SCT,"Nurse")
         Nurse,
-        /// (J-00187,SRT,"Radiologic Technologist")
+        /// (159016003,SCT,"Radiologic Technologist")
         RadiologicTechnologist,
         /// (128674,DCM,"Lead Radiologic Technologist")
         LeadRadiologicTechnologist,
-        /// (J-06173,SRT,"Radiation Therapist")
+        /// (3430008,SCT,"Radiation Therapist")
         RadiationTherapist,
-        /// (J-00187,SRT,"Radiographer")
+        /// (159016003,SCT,"Radiographer")
         Radiographer,
         /// (C1144859,UMLS,"Intern")
         Intern,
-        /// (J-005E6,SRT,"Resident")
+        /// (405277009,SCT,"Resident")
         Resident,
-        /// (J-00172,SRT,"Registrar")
+        /// (158971006,SCT,"Registrar")
         Registrar,
         /// (121088,DCM,"Fellow")
         Fellow,
-        /// (J-005E8,SRT,"Attending")
+        /// (405279007,SCT,"Attending")
         Attending,
-        /// (J-0050A,SRT,"Consultant")
+        /// (309390008,SCT,"Consultant")
         Consultant,
         /// (C1441532,UMLS,"Consulting Physician")
         ConsultingPhysician,
-        /// (J-0714A,SRT,"Scrub nurse")
+        /// (415506007,SCT,"Scrub nurse")
         ScrubNurse,
-        /// (J-00556,SRT,"Surgeon")
+        /// (304292004,SCT,"Surgeon")
         Surgeon,
         /// (121092,DCM,"Sonologist")
         Sonologist,

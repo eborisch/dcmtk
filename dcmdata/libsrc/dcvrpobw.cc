@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1997-2018, OFFIS e.V.
+ *  Copyright (C) 1997-2020, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -25,7 +25,6 @@
 #include "dcmtk/config/osconfig.h"    /* make sure OS specific configuration is included first */
 #include "dcmtk/dcmdata/dcvrpobw.h"
 
-
 DcmPolymorphOBOW::DcmPolymorphOBOW(
     const DcmTag & tag,
     const Uint32 len)
@@ -33,7 +32,8 @@ DcmPolymorphOBOW::DcmPolymorphOBOW(
     changeVR(OFFalse),
     currentVR(EVR_OW)
 {
-    if (getTag().getEVR() == EVR_ox || getTag().getEVR() == EVR_lt) setTagVR(EVR_OW);
+    if (getTag().getEVR() == EVR_ox || getTag().getEVR() == EVR_px || getTag().getEVR() == EVR_lt)
+        setTagVR(EVR_OW);
 }
 
 DcmPolymorphOBOW::DcmPolymorphOBOW(const DcmPolymorphOBOW & oldObj)

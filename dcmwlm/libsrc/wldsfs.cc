@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1996-2018, OFFIS e.V.
+ *  Copyright (C) 1996-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -27,9 +27,13 @@ BEGIN_EXTERN_C
 #include <fcntl.h>     // for O_RDWR
 #endif
 END_EXTERN_C
-#include "dcmtk/dcmnet/dicom.h"
-#include "dcmtk/dcmwlm/wltypdef.h"
 #include "dcmtk/ofstd/oftypes.h"
+#include "dcmtk/ofstd/ofstd.h"
+#include "dcmtk/ofstd/ofdatime.h"
+#include "dcmtk/oflog/internal/env.h"
+#include "dcmtk/dcmnet/dicom.h"
+#include "dcmtk/dcmnet/dimse.h"
+#include "dcmtk/dcmwlm/wltypdef.h"
 #include "dcmtk/dcmdata/dcdatset.h"
 #include "dcmtk/dcmdata/dcsequen.h"
 #include "dcmtk/dcmdata/dcvrat.h"
@@ -38,7 +42,6 @@ END_EXTERN_C
 #include "dcmtk/dcmdata/dcvrcs.h"
 #include "dcmtk/dcmwlm/wlds.h"
 #include "dcmtk/dcmwlm/wlfsim.h"
-#include "dcmtk/ofstd/ofstd.h"
 
 #include "dcmtk/dcmwlm/wldsfs.h"
 
@@ -50,8 +53,7 @@ WlmDataSourceFileSystem::WlmDataSourceFileSystem()
 // Task         : Constructor.
 // Parameters   : none.
 // Return Value : none.
-  : fileSystemInteractionManager( ), dfPath( "" ), enableRejectionOfIncompleteWlFiles( OFTrue ),
-    handleToReadLockFile( 0 )
+  : fileSystemInteractionManager( ), dfPath( "" ), enableRejectionOfIncompleteWlFiles( OFTrue ), handleToReadLockFile( 0 )
 {
 }
 
@@ -103,6 +105,7 @@ OFCondition WlmDataSourceFileSystem::DisconnectFromDataSource()
   // return result
   return( cond );
 }
+
 
 // ----------------------------------------------------------------------------
 
@@ -303,14 +306,14 @@ WlmDataSourceStatusType WlmDataSourceFileSystem::StartFindRequest( const DcmData
     << "=============================");
 
   // Set a read lock on the worklist files which shall be read from.
-  if( !SetReadlock() )
-    return( WLM_REFUSED_OUT_OF_RESOURCES );
+  if (!SetReadlock())
+    return(WLM_REFUSED_OUT_OF_RESOURCES);
 
   // dump some information if required
   DCMWLM_INFO("Determining matching records from worklist files");
 
   // Determine records from worklist files which match the search mask
-  unsigned long numOfMatchingRecords = fileSystemInteractionManager.DetermineMatchingRecords( identifiers );
+  unsigned long numOfMatchingRecords = OFstatic_cast(unsigned long, fileSystemInteractionManager.DetermineMatchingRecords( identifiers ));
 
   // dump some information if required
   DCMWLM_INFO("Matching results: " << numOfMatchingRecords << " matching records found in worklist files");
@@ -662,11 +665,11 @@ OFBool WlmDataSourceFileSystem::SetReadlock()
   // assign path to a local variable
   OFString lockname = dfPath;
 
-  // if the given path does not show a PATH_SEPERATOR at the end, append one
+  // if the given path does not show a PATH_SEPARATOR at the end, append one
   if( !lockname.empty() && lockname[lockname.length()-1] != PATH_SEPARATOR )
     lockname += PATH_SEPARATOR;
 
-  // append calledApplicationEntityTitle, another PATH_SEPERATOR,
+  // append calledApplicationEntityTitle, another PATH_SEPARATOR,
   // and LOCKFILENAME to the given path (and separator)
   lockname += calledApplicationEntityTitle;
   lockname += PATH_SEPARATOR;

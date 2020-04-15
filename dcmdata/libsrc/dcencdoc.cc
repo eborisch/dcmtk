@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2018, OFFIS e.V.
+ *  Copyright (C) 2018-2020, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -21,24 +21,26 @@
 
 //make sure OS specific configuration is included first
 #include "dcmtk/config/osconfig.h"
-#include "dcmtk/dcmdata/cmdlnarg.h"
-#include "dcmtk/dcmdata/dccodec.h"
-//for tag constants
-#include "dcmtk/dcmdata/dcdeftag.h"
 #include "dcmtk/dcmdata/dcencdoc.h"
-//for dcmtk version name
+
+#include "dcmtk/ofstd/ofconapp.h"
+#include "dcmtk/ofstd/ofxml.h"
+#include "dcmtk/ofstd/oftypes.h"
+
+#include "dcmtk/dcmdata/dcpath.h"
+#include "dcmtk/dcmdata/dccodec.h"
+#include "dcmtk/dcmdata/dcdeftag.h"
 #include "dcmtk/dcmdata/dcuid.h"
-#include "dcmtk/dcmiod/modequipment.h"
-#include "dcmtk/ofstd/ofdatime.h"
-#include "dcmtk/ofstd/ofstd.h"
-#include "dcmtk/ofstd/ofstdinc.h"
+#include "dcmtk/dcmdata/dcvrpobw.h"
+#include "dcmtk/dcmdata/dcvrui.h"
+#include "dcmtk/dcmdata/dcvrda.h"
+#include "dcmtk/dcmdata/dcvrtm.h"
 
 #define SHORTCOL 3
 #define LONGCOL 21
 
 // exit codes for this command line tool
-// (common codes are defined in "ofexit.h"
-// included from "ofconapp.h")
+// (common codes are defined in "ofexit.h" included from "ofconapp.h")
 
 // general errors
 #define EXITCODE_MEMORY_EXHAUSTED                4
@@ -99,6 +101,7 @@ OFBool DcmEncapsulatedDocument::XMLsearchAttribute(
   OFString attr)
 {
   OFBool found = OFFalse;
+#ifndef _XMLWIDECHAR
   if (currnode.nChildNode() == 0)
   {
     //"currnode has no children (leaf)";
@@ -125,6 +128,7 @@ OFBool DcmEncapsulatedDocument::XMLsearchAttribute(
       found |= childfound;
     }
   }
+#endif
   return found;
 }
 
@@ -132,8 +136,9 @@ OFString DcmEncapsulatedDocument::XMLgetAllAttributeValues(
   XMLNode fileNode,
   OFString attr)
 {
-  OFList<OFString> attributeValueslist;
   OFString attributeValues;
+#ifndef _XMLWIDECHAR
+  OFList<OFString> attributeValueslist;
   if (XMLsearchAttribute(fileNode, &attributeValueslist, attr))
   {
     //If the Attribute is mediaType, initialize with text/xml to exclude
@@ -158,6 +163,7 @@ OFString DcmEncapsulatedDocument::XMLgetAllAttributeValues(
         attributeValues = "";
     }
   }
+#endif
   return attributeValues;
 }
 
@@ -166,6 +172,7 @@ OFString DcmEncapsulatedDocument::XMLgetAttribute(
   DcmTagKey attr)
 {
   OFString result = "";
+#ifndef _XMLWIDECHAR
   if (attr == DCM_DocumentTitle)
   {
     if (fileNode.getChildNode("title").getText() != NULL)
@@ -249,6 +256,7 @@ OFString DcmEncapsulatedDocument::XMLgetAttribute(
   {
     result = OFString(OFSTRING_GUARD(fileNode.getChildNode("code").getAttribute("displayName")));
   }
+#endif
   return result;
 }
 
@@ -256,6 +264,11 @@ int DcmEncapsulatedDocument::getCDAData(
   const char *filename,
   OFLogger &appLogger)
 {
+#ifdef _XMLWIDECHAR
+#warning "DCMTK compiled with 'wide char XML parser'. cda2dcm will be unable to read and encapsulate CDA documents."
+  OFLOG_ERROR(appLogger, "DCMTK compiled with \"wide char XML parser\". Cannot parse CDA data because of incompatible API.");
+  return 99;
+#else
   if (ftype != "cda")
   {
     OFLOG_WARN(appLogger, "Filetype mismatch or filetype not set. Current ftype is " << ftype);
@@ -461,6 +474,7 @@ int DcmEncapsulatedDocument::getCDAData(
     else opt_conceptCM = cCM;
   }
   return EXITCODE_NO_ERROR;
+#endif
 }
 
 void DcmEncapsulatedDocument::addCDACommandlineOptions(OFCommandLine &cmd)
@@ -762,8 +776,8 @@ OFCondition DcmEncapsulatedDocument::createIdentifiers(OFLogger& appLogger)
     cond = dfile.loadFile(opt_seriesFile, EXS_Unknown, EGL_noChange);
     if (cond.bad())
     {
-      OFLOG_WARN(appLogger, cond.text() <<
-                  ": reading file: " << opt_seriesFile);
+      OFLOG_WARN(appLogger, cond.text()
+                  << ": reading file: " << opt_seriesFile);
     }
     else
     {
@@ -1167,7 +1181,7 @@ OFCondition DcmEncapsulatedDocument::createHeader(
       {
         OFLOG_DEBUG(logger, "Frame of Reference UID "
                     << DCM_FrameOfReferenceUID
-                    << "value was empty, generating a new one."
+                    << " value was empty, generating a new one."
                       );
         dcmGenerateUniqueIdentifier(buf, SITE_SERIES_UID_ROOT);
         opt_frameOfReferenceUID = buf;
@@ -1178,7 +1192,7 @@ OFCondition DcmEncapsulatedDocument::createHeader(
         {
           OFLOG_DEBUG(logger, "Frame of Reference UID "
                       << DCM_FrameOfReferenceUID
-                      << "value was faulty, generating a new one."
+                      << " value was faulty, generating a new one."
                         );
           dcmGenerateUniqueIdentifier(buf, SITE_SERIES_UID_ROOT);
           opt_frameOfReferenceUID = buf;
@@ -1195,53 +1209,61 @@ OFCondition DcmEncapsulatedDocument::createHeader(
       {
         if (opt_manufacturer.empty())
         {
-          OFLOG_ERROR(logger, "No Manufacturer "
+          opt_manufacturer="DCMTK_MANUFACTURING";
+          OFLOG_WARN(logger, "No Manufacturer "
                       << DCM_Manufacturer
-                      << " provided nor found in series "
-                      <<"(required for Enhanced General Equipment module)."
+                      << " provided nor found in series. This attribute is "
+                      << "required for Enhanced General Equipment module. "
+                      << opt_manufacturer
+                      << " will be inserted as dummy value."
                         );
-          result = EC_InvalidValue;
         }
-        else result = dataset->putAndInsertOFStringArray(DCM_Manufacturer, opt_manufacturer);
+        result = dataset->putAndInsertOFStringArray(DCM_Manufacturer, opt_manufacturer);
       }
       if (result.good())
       {
         if (opt_manufacturerModelName.empty())
         {
-          OFLOG_ERROR(logger, "No Manufacturer Model Name "
+          opt_manufacturerModelName="DCMTK_3DMODEL_3";
+          OFLOG_WARN(logger, "No Manufacturer Model Name "
                       << DCM_ManufacturerModelName
-                      << " provided nor found in series "
-                      <<"(required for Enhanced General Equipment module)."
+                      << " provided nor found in series. This attribute is "
+                      << "required for Enhanced General Equipment module. "
+                      << opt_manufacturerModelName
+                      << " will be inserted as dummy value."
                         );
-          result = EC_InvalidValue;
         }
-        else result = dataset->putAndInsertOFStringArray(DCM_ManufacturerModelName, opt_manufacturerModelName);
+        result = dataset->putAndInsertOFStringArray(DCM_ManufacturerModelName, opt_manufacturerModelName);
       }
       if (result.good())
       {
         if (opt_deviceSerialNumber.empty())
         {
-          OFLOG_ERROR(logger, "No Device Serial Number "
+          opt_deviceSerialNumber="DCMTK01234567890";
+          OFLOG_WARN(logger, "No Device Serial Number "
                       << DCM_DeviceSerialNumber
-                      << " provided nor found in series "
-                      <<"(required for Enhanced General Equipment module)."
+                      << " provided nor found in series. This attribute is "
+                      << "required for Enhanced General Equipment module. "
+                      << opt_deviceSerialNumber
+                      << " will be inserted as dummy value."
                         );
-          result = EC_InvalidValue;
         }
-        else result = dataset->putAndInsertOFStringArray(DCM_DeviceSerialNumber, opt_deviceSerialNumber);
+        result = dataset->putAndInsertOFStringArray(DCM_DeviceSerialNumber, opt_deviceSerialNumber);
       }
       if (result.good())
       {
         if (opt_softwareVersions.empty())
         {
-          OFLOG_ERROR(logger, "No Software Versions "
+          opt_softwareVersions=OFFIS_DCMTK_VERSION;
+          OFLOG_WARN(logger, "No Software Versions "
                       << DCM_SoftwareVersions
-                      << " provided nor found in series "
-                      <<"(required for Enhanced General Equipment module)."
+                      << " provided nor found in series. This attribute is "
+                      << "required for Enhanced General Equipment module. "
+                      << opt_softwareVersions
+                      << " will be inserted as dummy value."
                         );
-          result = EC_InvalidValue;
         }
-        else result = dataset->putAndInsertOFStringArray(DCM_SoftwareVersions, opt_softwareVersions);
+        result = dataset->putAndInsertOFStringArray(DCM_SoftwareVersions, opt_softwareVersions);
       }
       if (result.good())
       {

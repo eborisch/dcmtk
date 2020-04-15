@@ -1,12 +1,12 @@
 /*
  *
- *  Copyright (C) 2015-2018, J. Riesmeier, Oldenburg, Germany
+ *  Copyright (C) 2015-2020, J. Riesmeier, Oldenburg, Germany
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  Header file for class CID10013_CTAcquisitionType
  *
- *  Generated automatically from DICOM PS 3.16-2018d
- *  File created on 2018-09-27 16:57:35 by J. Riesmeier
+ *  Generated automatically from DICOM PS 3.16-2020a
+ *  File created on 2020-02-04 12:04:07 by J. Riesmeier
  *
  */
 
@@ -42,7 +42,7 @@ class DCMTK_CMR_EXPORT CID10013_CTAcquisitionType
     {
         /// (113804,DCM,"Sequenced Acquisition")
         SequencedAcquisition,
-        /// (P5-08001,SRT,"Spiral Acquisition")
+        /// (116152004,SCT,"Spiral Acquisition")
         SpiralAcquisition,
         /// (113805,DCM,"Constant Angle Acquisition")
         ConstantAngleAcquisition,
@@ -50,7 +50,7 @@ class DCMTK_CMR_EXPORT CID10013_CTAcquisitionType
         StationaryAcquisition,
         /// (113807,DCM,"Free Acquisition")
         FreeAcquisition,
-        /// (R-FB8F1,SRT,"Cone Beam Acquisition")
+        /// (702569007,SCT,"Cone Beam Acquisition")
         ConeBeamAcquisition
     };
 

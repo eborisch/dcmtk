@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1997-2018, OFFIS e.V.
+ *  Copyright (C) 1997-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -89,7 +89,8 @@ DcmPixelData::DcmPixelData(
 {
     repListEnd = repList.end();
     current = original = repListEnd;
-    if (getTag().getEVR() == EVR_ox) setTagVR(EVR_OW);
+    if ((getTag().getEVR() == EVR_ox) || (getTag().getEVR() == EVR_px))
+        setTagVR(EVR_OW);
     unencapsulatedVR = getTag().getEVR();
     recalcVR();
 }
@@ -694,7 +695,7 @@ DcmPixelData::insertRepresentationEntry(
 
 void
 DcmPixelData::print(
-    STD_NAMESPACE ostream&out,
+    STD_NAMESPACE ostream &out,
     const size_t flags,
     const int level,
     const char *pixelFileName,
@@ -1090,7 +1091,7 @@ OFCondition DcmPixelData::write(
 }
 
 OFCondition DcmPixelData::writeXML(
-    STD_NAMESPACE ostream&out,
+    STD_NAMESPACE ostream &out,
     const size_t flags)
 {
     if (current == repListEnd)

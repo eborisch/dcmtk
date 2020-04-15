@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2018, OFFIS e.V.
+ *  Copyright (C) 1994-2020, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -343,6 +343,9 @@ int main(int argc, char *argv[])
       cmd.addOption("--padding-off",            "-p",      "no padding (default)");
       cmd.addOption("--padding-create",         "+p",   2, "[f]ile-pad [i]tem-pad: integer",
                                                            "align file on multiple of f bytes and items\non multiple of i bytes");
+    cmd.addSubGroup("handling of defined length UN elements:");
+      cmd.addOption("--retain-un",              "-uc",     "retain elements as UN (default)");
+      cmd.addOption("--convert-un",             "+uc",     "convert to real VR if known");
 #ifdef WITH_ZLIB
     cmd.addSubGroup("deflate compression level (only with --write-xfer-deflated/same):");
       cmd.addOption("--compression-level",      "+cl",  1, "[l]evel: integer (default: 6)",
@@ -354,7 +357,6 @@ int main(int argc, char *argv[])
       cmd.addOption("--sort-on-study-uid",      "-su",  1, "[p]refix: string",
                                                            "sort studies using prefix p and the Study\nInstance UID");
       cmd.addOption("--sort-on-patientname",    "-sp",     "sort studies using the Patient's Name and\na timestamp");
-
     cmd.addSubGroup("filename generation:");
       cmd.addOption("--default-filenames",      "-uf",     "generate filename from instance UID (default)");
       cmd.addOption("--unique-filenames",       "+uf",     "generate unique filenames");
@@ -787,6 +789,11 @@ int main(int argc, char *argv[])
       app.checkValue(cmd.getValueAndCheckMin(opt_itempad, 0));
       opt_paddingType = EPD_withPadding;
     }
+    cmd.endOptionBlock();
+
+    cmd.beginOptionBlock();
+    if (cmd.findOption("--retain-un")) dcmEnableUnknownVRConversion.set(OFFalse);
+    if (cmd.findOption("--convert-un")) dcmEnableUnknownVRConversion.set(OFTrue);
     cmd.endOptionBlock();
 
 #ifdef WITH_ZLIB
@@ -2392,7 +2399,7 @@ static void executeCommand( const OFString &cmd )
     // we 'emulate' a call to system() by passing the command to /bin/sh
     // which hopefully exists on all Posix systems.
 
-    if (execl( "/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL ) < 0)
+    if (execl( "/bin/sh", "/bin/sh", "-c", cmd.c_str(), OFreinterpret_cast(char *, 0) ) < 0)
       OFLOG_ERROR(storescpLogger, "cannot execute /bin/sh");
 
     // if execl succeeds, this part will not get executed.
@@ -2401,13 +2408,13 @@ static void executeCommand( const OFString &cmd )
   }
 #else
   PROCESS_INFORMATION procinfo;
-  STARTUPINFO sinfo;
+  STARTUPINFOA sinfo;
   OFBitmanipTemplate<char>::zeroMem((char *)&sinfo, sizeof(sinfo));
   sinfo.cb = sizeof(sinfo);
 
   // execute command (Attention: Do not pass DETACHED_PROCESS as sixth argument to the below
   // called function because in such a case the execution of batch-files is not going to work.)
-  if( !CreateProcess(NULL, OFconst_cast(char *, cmd.c_str()), NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo) )
+  if( !CreateProcessA(NULL, OFconst_cast(char *, cmd.c_str()), NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo) )
     OFLOG_ERROR(storescpLogger, "cannot execute command '" << cmd << "'");
 
   if (opt_execSync)

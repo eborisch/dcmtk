@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1998-2018, OFFIS e.V.
+ *  Copyright (C) 1998-2020, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -2223,7 +2223,7 @@ OFCondition DVInterface::sendIOD(const char * targetID,
   } else {
     // we are the child process
     if (execl(sender_application, sender_application, configPath.c_str(),
-            targetID, studyUID, seriesUID, instanceUID, NULL) < 0)
+            targetID, studyUID, seriesUID, instanceUID, OFreinterpret_cast(char *, 0)) < 0)
     {
       DCMPSTAT_ERROR("Unable to execute '" << sender_application << "'");
     }
@@ -2236,7 +2236,7 @@ OFCondition DVInterface::sendIOD(const char * targetID,
 
   // initialize startup info
   PROCESS_INFORMATION procinfo;
-  STARTUPINFO sinfo;
+  STARTUPINFOA sinfo;
   OFBitmanipTemplate<char>::zeroMem((char *)&sinfo, sizeof(sinfo));
   sinfo.cb = sizeof(sinfo);
   char commandline[4096];
@@ -2246,9 +2246,9 @@ OFCondition DVInterface::sendIOD(const char * targetID,
       studyUID, seriesUID);
   else sprintf(commandline, "%s %s %s %s", sender_application, configPath.c_str(), targetID, studyUID);
 #ifdef DEBUG
-  if (CreateProcess(NULL, commandline, NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo))
+  if (CreateProcessA(NULL, commandline, NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo))
 #else
-  if (CreateProcess(NULL, commandline, NULL, NULL, 0, DETACHED_PROCESS, NULL, NULL, &sinfo, &procinfo))
+  if (CreateProcessA(NULL, commandline, NULL, NULL, 0, DETACHED_PROCESS, NULL, NULL, &sinfo, &procinfo))
 #endif
   {
     return EC_Normal;
@@ -2286,7 +2286,7 @@ OFCondition DVInterface::startReceiver()
       // we are the parent process, continue loop
     } else {
       // we are the child process
-      if (execl(receiver_application, receiver_application, configPath.c_str(), getTargetID(i, DVPSE_receiver), NULL) < 0)
+      if (execl(receiver_application, receiver_application, configPath.c_str(), getTargetID(i, DVPSE_receiver), OFreinterpret_cast(char *, 0)) < 0)
       {
           DCMPSTAT_ERROR("Unable to execute '" << receiver_application << "'");
       }
@@ -2298,15 +2298,15 @@ OFCondition DVInterface::startReceiver()
     // Windows version - call CreateProcess()
     // initialize startup info
     PROCESS_INFORMATION procinfo;
-    STARTUPINFO sinfo;
+    STARTUPINFOA sinfo;
     OFBitmanipTemplate<char>::zeroMem((char *)&sinfo, sizeof(sinfo));
     sinfo.cb = sizeof(sinfo);
     char commandline[4096];
     sprintf(commandline, "%s %s %s", receiver_application, configPath.c_str(), getTargetID(i, DVPSE_receiver));
 #ifdef DEBUG
-    if (CreateProcess(NULL, commandline, NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo))
+    if (CreateProcessA(NULL, commandline, NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo))
 #else
-    if (CreateProcess(NULL, commandline, NULL, NULL, 0, DETACHED_PROCESS, NULL, NULL, &sinfo, &procinfo))
+    if (CreateProcessA(NULL, commandline, NULL, NULL, 0, DETACHED_PROCESS, NULL, NULL, &sinfo, &procinfo))
 #endif
     {
       // continue loop
@@ -2341,7 +2341,7 @@ OFCondition DVInterface::terminateReceiver()
     // we are the parent process, continue loop
   } else {
     // we are the child process
-    if (execl(receiver_application, receiver_application, configPath.c_str(), "--terminate", NULL) < 0)
+    if (execl(receiver_application, receiver_application, configPath.c_str(), "--terminate", OFreinterpret_cast(char *, 0)) < 0)
     {
         DCMPSTAT_ERROR("Unable to execute '" << receiver_application << "'");
     }
@@ -2353,15 +2353,15 @@ OFCondition DVInterface::terminateReceiver()
   // Windows version - call CreateProcess()
   // initialize startup info
   PROCESS_INFORMATION procinfo;
-  STARTUPINFO sinfo;
+  STARTUPINFOA sinfo;
   OFBitmanipTemplate<char>::zeroMem((char *)&sinfo, sizeof(sinfo));
   sinfo.cb = sizeof(sinfo);
   char commandline[4096];
   sprintf(commandline, "%s %s %s", receiver_application, configPath.c_str(), "--terminate");
 #ifdef DEBUG
-  if (CreateProcess(NULL, commandline, NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo))
+  if (CreateProcessA(NULL, commandline, NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo))
 #else
-  if (CreateProcess(NULL, commandline, NULL, NULL, 0, DETACHED_PROCESS, NULL, NULL, &sinfo, &procinfo))
+  if (CreateProcessA(NULL, commandline, NULL, NULL, 0, DETACHED_PROCESS, NULL, NULL, &sinfo, &procinfo))
 #endif
   {
     // continue loop
@@ -2409,11 +2409,11 @@ OFCondition DVInterface::startQueryRetrieveServer()
       char str_timeout[20];
       sprintf(str_timeout, "%lu", OFstatic_cast(unsigned long, timeout));
       execl(server_application, server_application, "-c", config_filename.c_str(), "--allow-shutdown",
-        "--timeout", str_timeout, NULL);
+        "--timeout", str_timeout, OFreinterpret_cast(char *, 0));
     }
     else
     {
-      execl(server_application, server_application, "-c", config_filename.c_str(), "--allow-shutdown", NULL);
+      execl(server_application, server_application, "-c", config_filename.c_str(), "--allow-shutdown", OFreinterpret_cast(char *, 0));
     }
 
     DCMPSTAT_ERROR("Unable to execute '" << server_application << "'");
@@ -2426,7 +2426,7 @@ OFCondition DVInterface::startQueryRetrieveServer()
   // Windows version - call CreateProcess()
   // initialize startup info
   PROCESS_INFORMATION procinfo;
-  STARTUPINFO sinfo;
+  STARTUPINFOA sinfo;
   OFBitmanipTemplate<char>::zeroMem((char *)&sinfo, sizeof(sinfo));
   sinfo.cb = sizeof(sinfo);
   char commandline[4096];
@@ -2442,9 +2442,9 @@ OFCondition DVInterface::startQueryRetrieveServer()
   }
 
 #ifdef DEBUG
-  if (CreateProcess(NULL, commandline, NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo))
+  if (CreateProcessA(NULL, commandline, NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo))
 #else
-  if (CreateProcess(NULL, commandline, NULL, NULL, 0, DETACHED_PROCESS, NULL, NULL, &sinfo, &procinfo))
+  if (CreateProcessA(NULL, commandline, NULL, NULL, 0, DETACHED_PROCESS, NULL, NULL, &sinfo, &procinfo))
 #endif
   {
     return EC_Normal;
@@ -3387,7 +3387,7 @@ OFCondition DVInterface::startPrintSpooler()
   const char *printer = NULL;
   unsigned long sleepingTime = getSpoolerSleep();
   if (sleepingTime==0) sleepingTime=1; // default
-  char sleepStr[20];
+  char sleepStr[30];
   sprintf(sleepStr, "%lu", sleepingTime);
   OFBool detailedLog = getDetailedLog();
 
@@ -3412,13 +3412,13 @@ OFCondition DVInterface::startPrintSpooler()
       if (detailedLog)
       {
         if (execl(spooler_application, spooler_application, "--verbose", "--dump", "--spool", printJobIdentifier.c_str(),
-          "--printer", printer, "--config", configPath.c_str(), "--sleep", sleepStr, NULL) < 0)
+          "--printer", printer, "--config", configPath.c_str(), "--sleep", sleepStr, OFreinterpret_cast(char *, 0)) < 0)
         {
           DCMPSTAT_ERROR("Unable to execute '" << spooler_application << "'");
         }
       } else {
         if (execl(spooler_application, spooler_application, "--spool", printJobIdentifier.c_str(),
-          "--printer", printer, "--config", configPath.c_str(), "--sleep", sleepStr, NULL) < 0)
+          "--printer", printer, "--config", configPath.c_str(), "--sleep", sleepStr, OFreinterpret_cast(char *, 0)) < 0)
         {
           DCMPSTAT_ERROR("Unable to execute '" << spooler_application << "'");
         }
@@ -3432,7 +3432,7 @@ OFCondition DVInterface::startPrintSpooler()
     // Windows version - call CreateProcess()
     // initialize startup info
     PROCESS_INFORMATION procinfo;
-    STARTUPINFO sinfo;
+    STARTUPINFOA sinfo;
     OFBitmanipTemplate<char>::zeroMem((char *)&sinfo, sizeof(sinfo));
     sinfo.cb = sizeof(sinfo);
     char commandline[4096];
@@ -3445,9 +3445,9 @@ OFCondition DVInterface::startPrintSpooler()
         printJobIdentifier.c_str(), printer, configPath.c_str(), sleepStr);
     }
 #ifdef DEBUG
-    if (0 == CreateProcess(NULL, commandline, NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo))
+    if (0 == CreateProcessA(NULL, commandline, NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo))
 #else
-    if (0 == CreateProcess(NULL, commandline, NULL, NULL, 0, DETACHED_PROCESS, NULL, NULL, &sinfo, &procinfo))
+    if (0 == CreateProcessA(NULL, commandline, NULL, NULL, 0, DETACHED_PROCESS, NULL, NULL, &sinfo, &procinfo))
 #endif
     {
       DCMPSTAT_ERROR("Unable to execute '" << spooler_application << "'");
@@ -3548,12 +3548,12 @@ OFCondition DVInterface::startPrintServer()
       if (detailedLog)
       {
         if (execl(application, application, "--logfile", "--verbose", "--dump", "--printer", printer, "--config",
-            configPath.c_str(), NULL) < 0)
+            configPath.c_str(), OFreinterpret_cast(char *, 0)) < 0)
         {
           DCMPSTAT_ERROR("Unable to execute '" << application << "'");
         }
       } else {
-        if (execl(application, application, "--logfile", "--printer", printer, "--config", configPath.c_str(), NULL) < 0)
+        if (execl(application, application, "--logfile", "--printer", printer, "--config", configPath.c_str(), OFreinterpret_cast(char *, 0)) < 0)
         {
           DCMPSTAT_ERROR("Unable to execute '" << application << "'");
         }
@@ -3567,7 +3567,7 @@ OFCondition DVInterface::startPrintServer()
     // Windows version - call CreateProcess()
     // initialize startup info
     PROCESS_INFORMATION procinfo;
-    STARTUPINFO sinfo;
+    STARTUPINFOA sinfo;
     OFBitmanipTemplate<char>::zeroMem((char *)&sinfo, sizeof(sinfo));
     sinfo.cb = sizeof(sinfo);
     char commandline[4096];
@@ -3578,9 +3578,9 @@ OFCondition DVInterface::startPrintServer()
       sprintf(commandline, "%s --logfile --printer %s --config %s", application, printer, configPath.c_str());
     }
 #ifdef DEBUG
-    if (0 == CreateProcess(NULL, commandline, NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo))
+    if (0 == CreateProcessA(NULL, commandline, NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo))
 #else
-    if (0 == CreateProcess(NULL, commandline, NULL, NULL, 0, DETACHED_PROCESS, NULL, NULL, &sinfo, &procinfo))
+    if (0 == CreateProcessA(NULL, commandline, NULL, NULL, 0, DETACHED_PROCESS, NULL, NULL, &sinfo, &procinfo))
 #endif
     {
       DCMPSTAT_ERROR("Unable to execute '" << application << "'");
@@ -3686,6 +3686,7 @@ OFCondition DVInterface::terminatePrintServer()
             if (profileNamePtr) profileName = profileNamePtr;
             DcmTLSSecurityProfile tlsProfile = TSP_Profile_BCP195;  // default
             if (profileName == "BCP195-ND") tlsProfile = TSP_Profile_BCP195_ND;
+            else if (profileName == "BCP195-EX") tlsProfile = TSP_Profile_BCP195_Extended;
             else if (profileName == "BCP195") tlsProfile = TSP_Profile_BCP195;
             else if (profileName == "AES") tlsProfile = TSP_Profile_AES;
             else if (profileName == "BASIC") tlsProfile = TSP_Profile_Basic;
@@ -3908,7 +3909,7 @@ OFCondition DVInterface::startExternalApplication(const char *application, const
   else
   {
     // we are the child process
-    if (execl(application, application, filename, NULL) < 0)
+    if (execl(application, application, filename, OFreinterpret_cast(char *, 0)) < 0)
     {
       DCMPSTAT_ERROR("Unable to execute '" << application << "'");
     }
@@ -3921,15 +3922,15 @@ OFCondition DVInterface::startExternalApplication(const char *application, const
 
   // initialize startup info
   PROCESS_INFORMATION procinfo;
-  STARTUPINFO sinfo;
+  STARTUPINFOA sinfo;
   OFBitmanipTemplate<char>::zeroMem((char *)&sinfo, sizeof(sinfo));
   sinfo.cb = sizeof(sinfo);
   char commandline[4096];
   sprintf(commandline, "%s %s", application, filename);
 #ifdef DEBUG
-  if (CreateProcess(NULL, commandline, NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo))
+  if (CreateProcessA(NULL, commandline, NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo))
 #else
-  if (CreateProcess(NULL, commandline, NULL, NULL, 0, DETACHED_PROCESS, NULL, NULL, &sinfo, &procinfo))
+  if (CreateProcessA(NULL, commandline, NULL, NULL, 0, DETACHED_PROCESS, NULL, NULL, &sinfo, &procinfo))
 #endif
   {
     return EC_Normal;

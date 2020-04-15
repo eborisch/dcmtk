@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1996-2017, OFFIS e.V.
+ *  Copyright (C) 1996-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -53,7 +53,7 @@ WlmDataSource::WlmDataSource()
 // Task         : Constructor.
 // Parameters   : none.
 // Return Value : none.
-  : failOnInvalidQuery( OFTrue ), calledApplicationEntityTitle(""),
+  : failOnInvalidQuery( OFTrue ), callingApplicationEntityTitle(""), calledApplicationEntityTitle(""),
     identifiers( NULL ), errorElements( NULL ), offendingElements( NULL ), errorComment( NULL ),
     foundUnsupportedOptionalKey( OFFalse ), readLockSetOnDataSource( OFFalse ),
     noSequenceExpansion( OFFalse ), returnedCharacterSet( RETURN_NO_CHARACTER_SET ), matchingDatasets(),
@@ -690,7 +690,7 @@ OFBool WlmDataSource::CheckMatchingKey( const DcmElement *elem )
         PutOffendingElements( tag );
         OFString message( "Invalid value for an attribute with VR=" );
         message += DcmVR( elem->ident() ).getVRName();
-        errorComment->putString( message.data(), message.size() );
+        errorComment->putOFStringArray( message );
       }
     }
       break;

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1998-2018, OFFIS e.V.
+ *  Copyright (C) 1998-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -125,11 +125,7 @@ static OFCondition readTextFile(const char *filename,
     if ((filename != NULL) && (strlen(filename) > 0))
     {
         OFLOG_INFO(dcmmklutLogger, "reading text file ...");
-#ifdef HAVE_IOS_NOCREATE
-        STD_NAMESPACE ifstream file(filename, STD_NAMESPACE ios::in | STD_NAMESPACE ios::nocreate);
-#else
-        STD_NAMESPACE ifstream file(filename, STD_NAMESPACE ios::in);
-#endif
+        STD_NAMESPACE ifstream file(filename, OFopenmode_in_nocreate);
         if (file)
         {
             inputEntries = 0;

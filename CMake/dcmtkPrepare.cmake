@@ -7,9 +7,9 @@ if(DEFINED DCMTK_CONFIGURATION_DONE)
 endif()
 set(DCMTK_CONFIGURATION_DONE true)
 
-# Minimum CMake version required
-if(CMAKE_BACKWARDS_COMPATIBILITY GREATER 3.12.3)
-  set(CMAKE_BACKWARDS_COMPATIBILITY 3.12.3 CACHE STRING "Latest version of CMake when this project was released." FORCE)
+# Latest CMake version tested
+if(CMAKE_BACKWARDS_COMPATIBILITY GREATER 3.15.3)
+  set(CMAKE_BACKWARDS_COMPATIBILITY 3.15.3 CACHE STRING "Latest version of CMake when this project was released." FORCE)
 endif()
 
 # CMAKE_BUILD_TYPE is set to value "Release" if none is specified by the
@@ -38,17 +38,17 @@ endif()
 #  a development snapshot and an even number indicates an official release.)
 set(DCMTK_MAJOR_VERSION 3)
 set(DCMTK_MINOR_VERSION 6)
-set(DCMTK_BUILD_VERSION 4)
+set(DCMTK_BUILD_VERSION 5)
 # The ABI is not guaranteed to be stable between different snapshots/releases,
 # so this particular version number is increased for each snapshot or release.
-set(DCMTK_ABI_VERSION 14)
+set(DCMTK_ABI_VERSION 15)
 
 # Package "release" settings (some are currently unused and, therefore, disabled)
 set(DCMTK_PACKAGE_NAME "dcmtk")
-set(DCMTK_PACKAGE_DATE "2018-11-29")
+set(DCMTK_PACKAGE_DATE "DEV")
 set(DCMTK_PACKAGE_VERSION "${DCMTK_MAJOR_VERSION}.${DCMTK_MINOR_VERSION}.${DCMTK_BUILD_VERSION}")
 set(DCMTK_PACKAGE_VERSION_NUMBER ${DCMTK_MAJOR_VERSION}${DCMTK_MINOR_VERSION}${DCMTK_BUILD_VERSION})
-set(DCMTK_PACKAGE_VERSION_SUFFIX "")
+set(DCMTK_PACKAGE_VERSION_SUFFIX "+")
 #set(DCMTK_PACKAGE_TARNAME "dcmtk-${DCMTK_PACKAGE_VERSION}")
 #set(DCMTK_PACKAGE_STRING "dcmtk ${DCMTK_PACKAGE_VERSION}")
 #set(DCMTK_PACKAGE_BUGREPORT "bugs@dcmtk.org")
@@ -56,6 +56,19 @@ set(DCMTK_PACKAGE_VERSION_SUFFIX "")
 
 # Shared library version information
 SET(DCMTK_LIBRARY_PROPERTIES VERSION "${DCMTK_ABI_VERSION}.${DCMTK_PACKAGE_VERSION}" SOVERSION "${DCMTK_ABI_VERSION}")
+
+# Gather information about the employed CMake version's behavior
+set(DCMTK_CMAKE_HAS_CXX_STANDARD FALSE)
+if(NOT CMAKE_MAJOR_VERSION LESS 3) # CMake versions prior to 3 don't understand VERSION_LESS etc.
+  if(NOT CMAKE_VERSION VERSION_LESS "3.1.3")
+    set(DCMTK_CMAKE_HAS_CXX_STANDARD TRUE)
+  endif()
+endif()
+define_property(GLOBAL PROPERTY DCMTK_CMAKE_HAS_CXX_STANDARD
+  BRIEF_DOCS "TRUE iff the CXX_STANDARD property exists."
+  FULL_DOCS "TRUE for CMake versions since 3.1.3 that evaluate the CXX_STANDARD property and CMAKE_CXX_STANDARD variable."
+)
+set_property(GLOBAL PROPERTY DCMTK_CMAKE_HAS_CXX_STANDARD ${DCMTK_CMAKE_HAS_CXX_STANDARD})
 
 # General build options and settings
 option(BUILD_APPS "Build command line applications and test programs." ON)
@@ -65,13 +78,6 @@ mark_as_advanced(BUILD_SINGLE_SHARED_LIBRARY)
 set(CMAKE_DEBUG_POSTFIX "" CACHE STRING "Library postfix for debug builds. Usually left blank.")
 # add our CMake modules to the module path, but prefer the ones from CMake.
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_ROOT}/Modules" "${CMAKE_CURRENT_SOURCE_DIR}/${DCMTK_CMAKE_INCLUDE}/CMake/")
-# newer CMake versions will warn if a module exists in its and the project's module paths, which is now always
-# the case since above line adds CMake's module path to the project's one. It, therefore, doesn't matter whether
-# we set the policy to OLD or NEW, since in both cases CMake's own module will be preferred. We just set
-# the policy to silence the warning.
-if(POLICY CMP0017)
-    cmake_policy(SET CMP0017 NEW)
-endif()
 if(BUILD_SINGLE_SHARED_LIBRARY)
   # When we are building a single shared lib, we are building shared libs :-)
   set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
@@ -89,6 +95,7 @@ option(DCMTK_WITH_ICU "Configure DCMTK with support for ICU." ON)
 if(NOT WIN32)
   option(DCMTK_WITH_WRAP "Configure DCMTK with support for WRAP." ON)
 endif()
+option(DCMTK_WITH_OPENJPEG "Configure DCMTK with support for OPENJPEG." ON)
 option(DCMTK_ENABLE_PRIVATE_TAGS "Configure DCMTK with support for DICOM private tags coming with DCMTK." OFF)
 option(DCMTK_WITH_THREADS "Configure DCMTK with support for multi-threading." ON)
 option(DCMTK_WITH_DOXYGEN "Build API documentation with DOXYGEN." ON)
@@ -96,7 +103,6 @@ option(DCMTK_GENERATE_DOXYGEN_TAGFILE "Generate a tag file with DOXYGEN." OFF)
 option(DCMTK_WIDE_CHAR_FILE_IO_FUNCTIONS "Build with wide char file I/O functions." OFF)
 option(DCMTK_WIDE_CHAR_MAIN_FUNCTION "Build command line tools with wide char main function." OFF)
 option(DCMTK_ENABLE_STL "Enable use of native STL classes and algorithms instead of DCMTK's own implementations." OFF)
-option(DCMTK_ENABLE_CXX11 "Enable use of native C++11 features (eg. move semantics)." OFF)
 
 macro(DCMTK_INFERABLE_OPTION OPTION DESCRIPTION)
   set("${OPTION}" INFERRED CACHE STRING "${DESCRIPTION}")
@@ -116,6 +122,7 @@ DCMTK_INFERABLE_OPTION(DCMTK_ENABLE_STL_STRING "Enable use of STL string.")
 DCMTK_INFERABLE_OPTION(DCMTK_ENABLE_STL_TYPE_TRAITS "Enable use of STL type traits.")
 DCMTK_INFERABLE_OPTION(DCMTK_ENABLE_STL_TUPLE "Enable use of STL tuple.")
 DCMTK_INFERABLE_OPTION(DCMTK_ENABLE_STL_SYSTEM_ERROR "Enable use of STL system_error.")
+DCMTK_INFERABLE_OPTION(DCMTK_ENABLE_CXX11 "Enable use of native C++11 features (eg. move semantics).")
 
 # Built-in (compiled-in) dictionary enabled on Windows per default, otherwise
 # disabled. Loading of external dictionary via run-time is, per default,
@@ -137,12 +144,23 @@ mark_as_advanced(CMAKE_DEBUG_POSTFIX)
 mark_as_advanced(FORCE EXECUTABLE_OUTPUT_PATH LIBRARY_OUTPUT_PATH)
 mark_as_advanced(SNDFILE_DIR DCMTK_WITH_SNDFILE) # not yet needed in public DCMTK
 mark_as_advanced(DCMTK_GENERATE_DOXYGEN_TAGFILE)
+mark_as_advanced(DCMTK_WITH_OPENJPEG) # only needed by DCMJP2K module
+
 if(NOT WIN32)
   # support for wide char file I/O functions is currently Windows-specific
   mark_as_advanced(DCMTK_WIDE_CHAR_FILE_IO_FUNCTIONS)
   # support for wide char main function is Windows-specific
   mark_as_advanced(DCMTK_WIDE_CHAR_MAIN_FUNCTION)
 endif()
+
+# Enable manpages only for non-Windows systems by default
+set(DCMTK_ENABLE_MANPAGES_DOCSTRING "Enable building/installing of manpages.")
+if(WIN32)
+  option(DCMTK_ENABLE_MANPAGES "${DCMTK_ENABLE_MANPAGES_DOCSTRING}" OFF)
+else()
+  option(DCMTK_ENABLE_MANPAGES "${DCMTK_ENABLE_MANPAGES_DOCSTRING}" ON)
+endif()
+mark_as_advanced(DCMTK_ENABLE_MANPAGES)
 
 enable_testing()
 
@@ -245,47 +263,48 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 # set project wide flags for compiler and linker
 
 if(WIN32)
-  option(DCMTK_OVERWRITE_WIN32_COMPILER_FLAGS "Overwrite compiler flags with DCMTK's WIN32 package default values." ON)
+  option(DCMTK_OVERWRITE_WIN32_COMPILER_FLAGS  "Modify the default compiler flags selected by CMake." ON)
+  option(DCMTK_COMPILE_WIN32_MULTITHREADED_DLL "Compile DCMTK using the Multithreaded DLL runtime library." OFF)
+  if (BUILD_SHARED_LIBS)
+    set(DCMTK_COMPILE_WIN32_MULTITHREADED_DLL ON)
+  endif()
 else()
+  # these settings play no role on other platforms
   set(DCMTK_OVERWRITE_WIN32_COMPILER_FLAGS OFF)
+  set(DCMTK_COMPILE_WIN32_MULTITHREADED_DLL OFF)
 endif()
 
-if(DCMTK_OVERWRITE_WIN32_COMPILER_FLAGS AND NOT BUILD_SHARED_LIBS)
+if(WIN32 AND CMAKE_GENERATOR MATCHES "Visual Studio .*")
+  # Evaluate the DCMTK_COMPILE_WIN32_MULTITHREADED_DLL option and adjust
+  # the runtime library setting (/MT or /MD) accordingly
+  set(CompilerFlags
+        CMAKE_CXX_FLAGS
+        CMAKE_CXX_FLAGS_DEBUG
+        CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_MINSIZEREL
+        CMAKE_CXX_FLAGS_RELWITHDEBINFO
+        CMAKE_C_FLAGS
+        CMAKE_C_FLAGS_DEBUG
+        CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL
+        CMAKE_C_FLAGS_RELWITHDEBINFO
+        )
 
-  # settings for Microsoft Visual Studio
-  if(CMAKE_GENERATOR MATCHES "Visual Studio .*")
-    # get Visual Studio Version
-    string(REGEX REPLACE "Visual Studio ([0-9]+).*" "\\1" VS_VERSION "${CMAKE_GENERATOR}")
-    # these settings never change even for C or C++
-    set(CMAKE_C_FLAGS_DEBUG "/MTd /Z7 /Od")
-    set(CMAKE_C_FLAGS_RELEASE "/DNDEBUG /MT /O2")
-    set(CMAKE_C_FLAGS_MINSIZEREL "/DNDEBUG /MT /O2")
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO "/DNDEBUG /MTd /Z7 /Od")
-    set(CMAKE_CXX_FLAGS_DEBUG "/MTd /Z7 /Od")
-    set(CMAKE_CXX_FLAGS_RELEASE "/DNDEBUG /MT /O2")
-    set(CMAKE_CXX_FLAGS_MINSIZEREL "/DNDEBUG /MT /O2")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "/DNDEBUG /MTd /Z7 /Od")
-    # specific settings for the various Visual Studio versions
-    if(VS_VERSION EQUAL 6)
-      set(CMAKE_C_FLAGS "/nologo /W3 /GX /Gy /YX")
-      set(CMAKE_CXX_FLAGS "/nologo /W3 /GX /Gy /YX /Zm500") # /Zm500 increments heap size which is needed on some system to compile templates in dcmimgle
-    endif()
-    if(VS_VERSION EQUAL 7)
-      set(CMAKE_C_FLAGS "/nologo /W3 /Gy")
-      set(CMAKE_CXX_FLAGS "/nologo /W3 /Gy")
-    endif()
-    if(VS_VERSION GREATER 7)
-      set(CMAKE_C_FLAGS "/nologo /W3 /Gy /EHsc")
-      set(CMAKE_CXX_FLAGS "/nologo /W3 /Gy /EHsc")
+  if(DCMTK_OVERWRITE_WIN32_COMPILER_FLAGS OR BUILD_SHARED_LIBS)
+    if(DCMTK_COMPILE_WIN32_MULTITHREADED_DLL OR BUILD_SHARED_LIBS)
+      # Convert any /MT or /MTd option to /MD or /MDd
+      foreach(CompilerFlag ${CompilerFlags})
+          string(REPLACE "/MT" "/MD" ${CompilerFlag} "${${CompilerFlag}}")
+          set(${CompilerFlag} "${${CompilerFlag}}" CACHE STRING "msvc compiler flags" FORCE)
+      endforeach()
+    else()
+      # Convert any /MD or /MDd option to /MT or /MTd
+      foreach(CompilerFlag ${CompilerFlags})
+          string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+          set(${CompilerFlag} "${${CompilerFlag}}" CACHE STRING "msvc compiler flags" FORCE)
+      endforeach()
     endif()
   endif()
-
-  # settings for Borland C++
-  if(CMAKE_GENERATOR MATCHES "Borland Makefiles")
-    # further settings required? not tested for a very long time!
-    set(CMAKE_STANDARD_LIBRARIES "import32.lib cw32mt.lib")
-  endif()
-
 endif()
 
 if(BUILD_SHARED_LIBS)
@@ -382,6 +401,11 @@ else()   # ... for non-Windows systems
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
   endif()
 
+  # When compiling with IBM xlC, add flags to suppress some noisy C++ warnings
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qsuppress=1500-029:1500-030")
+  endif()
+
 endif()
 
 # define libraries and object files that must be linked to most Windows applications
@@ -402,8 +426,28 @@ endif()
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 
-# determine which flags are required to enable C++11 features (if any)
-if(NOT DEFINED DCMTK_CXX11_FLAGS)
+# handle CMAKE_CXX_STANDARD and related variables
+if(DCMTK_CMAKE_HAS_CXX_STANDARD)
+  if(NOT DEFINED CMAKE_CXX_STANDARD)
+    if(DCMTK_ENABLE_CXX11 AND NOT DCMTK_ENABLE_CXX11 STREQUAL "INFERRED")
+      set(CMAKE_CXX_STANDARD 11)
+    endif()
+  endif()
+  if(NOT DEFINED CMAKE_CXX_STANDARD OR CMAKE_CXX_STANDARD MATCHES "^9[0-9]?$")
+    set(DCMTK_MODERN_CXX_STANDARD FALSE)
+  else()
+    set(DCMTK_MODERN_CXX_STANDARD TRUE)
+  endif()
+  define_property(GLOBAL PROPERTY DCMTK_MODERN_CXX_STANDARD
+    BRIEF_DOCS "TRUE when compiling C++11 (or newer) code."
+    FULL_DOCS "TRUE when the compiler does support and is configured for C++11 or a later C++ standard."
+  )
+  set_property(GLOBAL PROPERTY DCMTK_MODERN_CXX_STANDARD ${DCMTK_MODERN_CXX_STANDARD})
+  if(DEFINED DCMTK_CXX11_FLAGS)
+    message(WARNING "Legacy variable DCMTK_CXX11_FLAGS will be ignored since CMake now sets the flags based on the CMAKE_CXX_STANDARD variable automatically.")
+  endif()
+elseif(NOT DEFINED DCMTK_CXX11_FLAGS)
+  # determine which flags are required to enable C++11 features (if any)
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
     set(DCMTK_CXX11_FLAGS "-std=c++11")
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
@@ -418,6 +462,11 @@ if(NOT DEFINED DCMTK_CXX11_FLAGS)
   set(DCMTK_CXX11_FLAGS "${DCMTK_CXX11_FLAGS}" CACHE STRING "The flags to add to CMAKE_CXX_FLAGS for enabling C++11 (if any).")
   mark_as_advanced(DCMTK_CXX11_FLAGS)
 endif()
+define_property(GLOBAL PROPERTY DCMTK_MODERN_CXX_STANDARDS
+  BRIEF_DOCS "Modern C++ standards DCMTK knows about."
+  FULL_DOCS "The list of C++ standards since C++11 that DCMTK currently has configuration tests for. "
+)
+set_property(GLOBAL PROPERTY DCMTK_MODERN_CXX_STANDARDS 11 14 17)
 
 #-----------------------------------------------------------------------------
 # Third party libraries

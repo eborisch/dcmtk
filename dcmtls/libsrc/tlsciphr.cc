@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2018, OFFIS e.V.
+ *  Copyright (C) 2018-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -55,6 +55,9 @@ struct DcmCipherSuiteList
 /* This is a subset of the list of ciphersuites supported by OpenSSL 1.0.1 and newer.
  * This list only contains ciphersuites that offer an acceptable level of security,
  * plus the "historic" ciphersuites for older TLS profiles (Basic, AES, IHE ATNA NULL).
+ *
+ * TLS 1.3 ciphersuites are not included since OpenSSL uses a completely different
+ * API to negotiate these.
  *
  * IMPORTANT: This list must be sorted from the weakest to the strongest ciphersuite.
  *   - first sort by availability of forward secrecy (RSA < ECDH < ECDHE < DHE)
@@ -153,6 +156,7 @@ const size_t DcmTLSCiphersuiteHandler::unknownCipherSuiteIndex = (size_t) -1;
 DcmTLSCiphersuiteHandler::DcmTLSCiphersuiteHandler()
 : ciphersuiteList()
 , currentProfile(TSP_Profile_None)
+, tls13_enabled(OFTrue)
 , ciphersuiteSupported(new OFBool[GLOBAL_NUM_CIPHERSUITES])
 {
   determineSupportedCiphers();
@@ -242,18 +246,22 @@ DcmTransportLayerStatus DcmTLSCiphersuiteHandler::setTLSProfile(DcmTLSSecurityPr
   switch (profile)
   {
     case TSP_Profile_None:
+      tls13_enabled = OFTrue;
       ciphersuiteList.clear();
       break;
     case TSP_Profile_Basic:
+      tls13_enabled = OFFalse;
       result = addRequiredCipherSuite("TLS_RSA_WITH_3DES_EDE_CBC_SHA");
       if (TCS_ok != result) return result;
       break;
     case TSP_Profile_AES:
+      tls13_enabled = OFFalse;
       result = addRequiredCipherSuite("TLS_RSA_WITH_AES_128_CBC_SHA");
       if (TCS_ok != result) return result;
       addOptional3DESCipherSuite();
       break;
     case TSP_Profile_BCP195:
+      tls13_enabled = OFTrue;
       // recommended ciphersuites as defined in the DICOM profile, plus backwards compatibility
       result = addRequiredCipherSuite("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256");
       if (TCS_ok != result) return result;
@@ -268,6 +276,7 @@ DcmTransportLayerStatus DcmTLSCiphersuiteHandler::setTLSProfile(DcmTLSSecurityPr
       addOptional3DESCipherSuite();
       break;
     case TSP_Profile_BCP195_ND:
+      tls13_enabled = OFTrue;
       // required ciphersuites as defined in the DICOM profile
       result = addRequiredCipherSuite("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256");
       if (TCS_ok != result) return result;
@@ -278,7 +287,24 @@ DcmTransportLayerStatus DcmTLSCiphersuiteHandler::setTLSProfile(DcmTLSSecurityPr
       result = addRequiredCipherSuite("TLS_DHE_RSA_WITH_AES_256_GCM_SHA384");
       if (TCS_ok != result) return result;
       break;
+    case TSP_Profile_BCP195_Extended:
+      tls13_enabled = OFFalse;
+      // required ciphersuites as defined in the DICOM profile
+      result = addRequiredCipherSuite("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256");
+      if (TCS_ok != result) return result;
+      result = addRequiredCipherSuite("TLS_DHE_RSA_WITH_AES_128_GCM_SHA256");
+      if (TCS_ok != result) return result;
+      result = addRequiredCipherSuite("TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384");
+      if (TCS_ok != result) return result;
+      result = addRequiredCipherSuite("TLS_DHE_RSA_WITH_AES_256_GCM_SHA384");
+      if (TCS_ok != result) return result;
+      result = addRequiredCipherSuite("TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384");
+      if (TCS_ok != result) return result;
+      result = addRequiredCipherSuite("TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256");
+      if (TCS_ok != result) return result;
+      break;
     case TSP_Profile_IHE_ATNA_Unencrypted:
+      tls13_enabled = OFFalse;
       result = addRequiredCipherSuite("TLS_RSA_WITH_NULL_SHA");
       if (TCS_ok != result) return result;
       break;
@@ -290,6 +316,7 @@ DcmTransportLayerStatus DcmTLSCiphersuiteHandler::setTLSProfile(DcmTLSSecurityPr
 
 void DcmTLSCiphersuiteHandler::clearTLSProfile()
 {
+  tls13_enabled = OFTrue;
   currentProfile = TSP_Profile_None;
   ciphersuiteList.clear();
 }
@@ -327,12 +354,17 @@ DcmTransportLayerStatus DcmTLSCiphersuiteHandler::addCipherSuite(const char *sui
         }
         if (TKE_RSA == getCipherSuiteKeyExchange(idx))
         {
-          DCMTLS_WARN("Ciphersuite '" << suite << "' uses RSA key transport. RFC 7525 recomments that such cipher suites should not be used.");
+          DCMTLS_WARN("Ciphersuite '" << suite << "' uses RSA key transport. RFC 7525 recommends that such cipher suites should not be used.");
         }
 		else
         {
-          DCMTLS_WARN("Ciphersuite '" << suite << "' uses NO RSA key transport. RFC 7525 recomments that such cipher suites should not be used.");
+          DCMTLS_WARN("Ciphersuite '" << suite << "' uses NO RSA key transport. RFC 7525 recommends that such cipher suites should not be used.");
         }
+        break;
+
+      case TSP_Profile_BCP195_Extended:
+        DCMTLS_FATAL("Additional ciphersuites not permitted with security profile '" << lookupProfileName(currentProfile) << "'");
+        return TCS_tlsError;
         break;
 
       case TSP_Profile_None:
@@ -504,6 +536,9 @@ const char *DcmTLSCiphersuiteHandler::lookupProfileName(DcmTLSSecurityProfile pr
     case TSP_Profile_BCP195_ND:
       return "Non-downgrading BCP 195 TLS Profile";
       break;
+    case TSP_Profile_BCP195_Extended:
+      return "Extended BCP 195 TLS Profile";
+      break;
     case TSP_Profile_None:
       return "None";
       break;
@@ -532,6 +567,11 @@ OFBool DcmTLSCiphersuiteHandler::cipherNULLsupported() const
   return OFFalse;
 }
 
+OFBool DcmTLSCiphersuiteHandler::isTLS13Enabled() const
+{
+  return tls13_enabled;
+}
+
 long DcmTLSCiphersuiteHandler::getTLSOptions() const
 {
   long result = 0;
@@ -542,9 +582,9 @@ long DcmTLSCiphersuiteHandler::getTLSOptions() const
   result |= SSL_OP_NO_SSLv3;
 #endif
 
-  // For the Non-downgrading BCP 195 TLS Profile,
+  // For the Non-downgrading and Extended BCP 195 TLS Profile,
   // we also disable TLS 1.0 and TLS 1.1
-  if (currentProfile == TSP_Profile_BCP195_ND)
+  if ((currentProfile == TSP_Profile_BCP195_ND) || (currentProfile == TSP_Profile_BCP195_Extended))
   {
     result |= SSL_OP_NO_TLSv1;
     result |= SSL_OP_NO_TLSv1_1;

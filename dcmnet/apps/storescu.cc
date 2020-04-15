@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1996-2018, OFFIS e.V.
+ *  Copyright (C) 1996-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -52,7 +52,7 @@ END_EXTERN_C
 #include "dcmtk/dcmdata/cmdlnarg.h"
 #include "dcmtk/dcmdata/dcuid.h"     /* for dcmtk version name */
 #include "dcmtk/dcmdata/dcostrmz.h"  /* for dcmZlibCompressionLevel */
-#include "dcmtk/dcmtls/tlsopt.h"      /* for DcmTLSOptions */
+#include "dcmtk/dcmtls/tlsopt.h"     /* for DcmTLSOptions */
 
 #ifdef ON_THE_FLY_COMPRESSION
 #include "dcmtk/dcmjpeg/djdecode.h"  /* for JPEG decoders */
@@ -92,6 +92,7 @@ static E_FileReadMode opt_readMode = ERM_autoDetect;
 
 static OFBool opt_scanDir = OFFalse;
 static OFBool opt_recurse = OFFalse;
+static OFBool opt_renameFile = OFFalse;
 static const char *opt_scanPattern = "";
 
 static OFBool opt_haltOnUnsuccessfulStore = OFTrue;
@@ -213,6 +214,8 @@ int main(int argc, char *argv[])
 #endif
       cmd.addOption("--no-recurse",           "-r",      "do not recurse within directories (default)");
       cmd.addOption("--recurse",              "+r",      "recurse within specified directories");
+      cmd.addOption("--no-rename",            "-rn",     "do not rename processed files (default)");
+      cmd.addOption("--rename",               "+rn",     "append .done/.bad to processed files");
   cmd.addGroup("network options:");
     cmd.addSubGroup("application entity titles:");
       cmd.addOption("--aetitle",              "-aet", 1, "[a]etitle: string", "set my calling AE title (default: " APPLICATIONTITLE ")");
@@ -364,6 +367,11 @@ int main(int argc, char *argv[])
         app.checkDependence("--recurse", "--scan-directories", opt_scanDir);
         opt_recurse = OFTrue;
       }
+      cmd.endOptionBlock();
+
+      cmd.beginOptionBlock();
+      if (cmd.findOption("--no-rename")) opt_renameFile = OFFalse;
+      if (cmd.findOption("--rename")) opt_renameFile = OFTrue;
       cmd.endOptionBlock();
 
       if (cmd.findOption("--aetitle")) app.checkValue(cmd.getValue(opt_ourTitle));
@@ -695,7 +703,7 @@ int main(int argc, char *argv[])
       return 1;
     }
 
-    /* initialize asscociation parameters, i.e. create an instance of T_ASC_Parameters*. */
+    /* initialize association parameters, i.e. create an instance of T_ASC_Parameters*. */
     cond = ASC_createAssociationParameters(&params, opt_maxReceivePDULength);
     if (cond.bad()) {
       OFLOG_FATAL(storescuLogger, DimseCondition::dump(temp_str, cond));
@@ -973,7 +981,7 @@ addStoragePresentationContexts(T_ASC_Parameters *params,
    * Each SOP Class will be proposed in two presentation contexts (unless
    * the opt_combineProposedTransferSyntaxes global variable is true).
    * The command line specified a preferred transfer syntax to use.
-   * This prefered transfer syntax will be proposed in one
+   * This preferred transfer syntax will be proposed in one
    * presentation context and a set of alternative (fallback) transfer
    * syntaxes will be proposed in a different presentation context.
    *
@@ -1253,6 +1261,18 @@ progressCallback(void * /*callbackData*/,
   }
 }
 
+static void
+renameFile(const char *fname, const char *fext)
+{
+  if (!opt_renameFile) return;
+  OFString fnewname(fname);
+  fnewname += fext;
+  if (OFStandard::renameFile(fname, fnewname))
+    OFLOG_DEBUG(storescuLogger, "renamed file '" << fname << "' to '" << fnewname << "'");
+  else
+    OFLOG_WARN(storescuLogger, "cannot rename file '" << fname << "' to '" << fnewname << "'");
+}
+
 static OFCondition
 storeSCU(T_ASC_Association *assoc, const char *fname)
   /*
@@ -1285,9 +1305,11 @@ storeSCU(T_ASC_Association *assoc, const char *fname)
   DcmFileFormat dcmff;
   OFCondition cond = dcmff.loadFile(fname, EXS_Unknown, EGL_noChange, DCM_MaxReadLength, opt_readMode);
 
-  /* figure out if an error occured while the file was read*/
-  if (cond.bad()) {
+  /* figure out if an error occurred while the file was read */
+  if (cond.bad())
+  {
     OFLOG_ERROR(storescuLogger, "Bad DICOM file: " << fname << ": " << cond.text());
+    renameFile(fname, ".bad");
     return cond;
   }
 
@@ -1298,9 +1320,11 @@ storeSCU(T_ASC_Association *assoc, const char *fname)
 
   /* figure out which SOP class and SOP instance is encapsulated in the file */
   if (!DU_findSOPClassAndInstanceInDataSet(dcmff.getDataset(),
-    sopClass, sizeof(sopClass), sopInstance, sizeof(sopInstance), opt_correctUIDPadding)) {
-      OFLOG_ERROR(storescuLogger, "No SOP Class or Instance UID in file: " << fname);
-      return DIMSE_BADDATA;
+    sopClass, sizeof(sopClass), sopInstance, sizeof(sopInstance), opt_correctUIDPadding))
+  {
+    OFLOG_ERROR(storescuLogger, "No SOP Class or Instance UID in file: " << fname);
+    renameFile(fname, ".bad");
+    return DIMSE_BADDATA;
   }
 
   /* figure out which of the accepted presentation contexts should be used */
@@ -1320,11 +1344,13 @@ storeSCU(T_ASC_Association *assoc, const char *fname)
     presID = ASC_findAcceptedPresentationContextID(assoc, sopClass, filexfer.getXferID());
   else
     presID = ASC_findAcceptedPresentationContextID(assoc, sopClass);
-  if (presID == 0) {
+  if (presID == 0)
+  {
     const char *modalityName = dcmSOPClassUIDToModality(sopClass);
     if (!modalityName) modalityName = dcmFindNameOfUID(sopClass);
     if (!modalityName) modalityName = "unknown SOP class";
     OFLOG_ERROR(storescuLogger, "No presentation context for: (" << modalityName << ") " << sopClass);
+    renameFile(fname, ".bad");
     return DIMSE_NOVALIDPRESENTATIONCONTEXTID;
   }
 
@@ -1333,7 +1359,8 @@ storeSCU(T_ASC_Association *assoc, const char *fname)
   DcmXfer netTransfer(pc.acceptedTransferSyntax);
 
   /* if required, dump general information concerning transfer syntaxes */
-  if (storescuLogger.isEnabledFor(OFLogger::INFO_LOG_LEVEL)) {
+  if (storescuLogger.isEnabledFor(OFLogger::INFO_LOG_LEVEL))
+  {
     DcmXfer fileTransfer(dcmff.getDataset()->getOriginalXfer());
     OFLOG_INFO(storescuLogger, "Converting transfer syntax: " << fileTransfer.getXferName()
       << " -> " << netTransfer.getXferName());
@@ -1341,8 +1368,10 @@ storeSCU(T_ASC_Association *assoc, const char *fname)
 
 #ifdef ON_THE_FLY_COMPRESSION
   cond = dcmff.getDataset()->chooseRepresentation(netTransfer.getXfer(), NULL);
-  if (cond.bad()) {
+  if (cond.bad())
+  {
     OFLOG_ERROR(storescuLogger, "No conversion to transfer syntax " << netTransfer.getXferName() << " possible!");
+    renameFile(fname, ".bad");
     return cond;
   }
 #endif
@@ -1369,8 +1398,14 @@ storeSCU(T_ASC_Association *assoc, const char *fname)
    * If store command completed normally, with a status
    * of success or some warning then the image was accepted.
    */
-  if (cond == EC_Normal && (rsp.DimseStatus == STATUS_Success || DICOM_WARNING_STATUS(rsp.DimseStatus))) {
+  if (cond == EC_Normal && (rsp.DimseStatus == STATUS_Success || DICOM_WARNING_STATUS(rsp.DimseStatus)))
+  {
     unsuccessfulStoreEncountered = OFFalse;
+    renameFile(fname, ".done");
+  }
+  else
+  {
+    renameFile(fname, ".bad");
   }
 
   /* remember the response's status for later transmissions of data */
@@ -1420,7 +1455,7 @@ cstore(T_ASC_Association *assoc, const OFString &fname)
   /* opt_repeatCount specifies how many times a certain file shall be processed */
   int n = OFstatic_cast(int, opt_repeatCount);
 
-  /* as long as no error occured and the counter does not equal 0 */
+  /* as long as no error occurred and the counter does not equal 0 */
   while ((cond.good()) && n-- && !(opt_haltOnUnsuccessfulStore && unsuccessfulStoreEncountered))
   {
     /* process file (read file, send C-STORE-RQ, receive C-STORE-RSP) */

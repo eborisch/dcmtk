@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1997-2016, OFFIS e.V.
+ *  Copyright (C) 1997-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -28,6 +28,7 @@
 #include "dcmtk/ofstd/ofdefine.h"
 
 #define INCLUDE_CSTRING
+#define INCLUDE_CSTDINT
 #include "dcmtk/ofstd/ofstdinc.h"
 
 /*---------------------*
@@ -80,9 +81,24 @@ class OFBitmanipTemplate
                         T *dest,
                         const size_t count)
     {
-#ifdef HAVE_MEMMOVE
-        memmove(OFstatic_cast(void *, dest), OFstatic_cast(const void *, src), OFstatic_cast(size_t, count) * sizeof(T));
+#if defined(HAVE_MEMMOVE) && !defined(PTRDIFF_MAX)
+        // some platforms have memmove() but not PTRDIFF_MAX.
+        // In this case, just call memmove().
+        memmove(OFstatic_cast(void *, dest), OFstatic_cast(const void *, src), count * sizeof(T));
 #else
+
+#ifdef HAVE_MEMMOVE
+        // On some platforms (such as MinGW), memmove cannot move buffers
+        // larger than PTRDIFF_MAX. In the rare case of such huge buffers,
+        // fall back to our own implementation.
+        const size_t c = count * sizeof(T);
+        if (c <= PTRDIFF_MAX)
+        {
+            memmove(OFstatic_cast(void *, dest), OFstatic_cast(const void *, src), c);
+            return;
+        }
+#endif /* HAVE_MEMMOVE */
+
         if (src == dest)
             return;
 
@@ -119,7 +135,7 @@ class OFBitmanipTemplate
     {
 #ifdef HAVE_MEMSET
         if ((value == 0) || (sizeof(T) == sizeof(unsigned char)))
-            memset(OFstatic_cast(void *, dest), OFstatic_cast(int, value), OFstatic_cast(size_t, count) * sizeof(T));
+            memset(OFstatic_cast(void *, dest), OFstatic_cast(int, value), count * sizeof(T));
         else
 #endif
         {
@@ -140,7 +156,7 @@ class OFBitmanipTemplate
                         const size_t count)
     {
 #ifdef HAVE_MEMZERO
-        memzero(dest, OFstatic_cast(size_t, count) * sizeof(T));
+        memzero(dest, count * sizeof(T));
 #else
         size_t i;
         T *q = dest;

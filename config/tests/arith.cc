@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2014-2017, OFFIS e.V.
+ *  Copyright (C) 2014-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -338,9 +338,16 @@ static void provoke_snan()
     _MM_SET_EXCEPTION_MASK( _MM_GET_EXCEPTION_MASK() & ~_MM_MASK_INVALID );
 #elif defined(HAVE_FENV_H) && defined(HAVE_PROTOTYPE_FEENABLEEXCEPT)
     feenableexcept( FE_INVALID );
-#elif defined(HAVE_IEEEFP_H)
+#elif defined(HAVE_IEEEFP_H) && !defined(__CYGWIN__)
+    // Cygwin unfortunately seems to have <ieeefp.h> but no implementation of fgetmask/fpsetmask
     fp_except cw = fpgetmask();
+
+#ifdef FP_X_DX
+    // on some systems, the devide-by-zero flag is called FP_X_DX
+    fpsetmask(cw | FP_X_INV | FP_X_DX | FP_X_OFL);
+#else
     fpsetmask(cw | FP_X_INV | FP_X_DZ | FP_X_OFL);
+#endif
 #endif
     // Visual Studio will emit an exception the moment
     // we assign a signaling NaN to another float variable
@@ -368,9 +375,17 @@ static int test_snan( STD_NAMESPACE ostream& out, const char* name )
     _MM_SET_EXCEPTION_MASK( _MM_GET_EXCEPTION_MASK() | _MM_MASK_INVALID );
 #elif defined(HAVE_FENV_H) && defined(HAVE_PROTOTYPE_FEENABLEEXCEPT)
     fedisableexcept( FE_INVALID );
-#elif defined(HAVE_IEEEFP_H)
+#elif defined(HAVE_IEEEFP_H) && !defined(__CYGWIN__)
+    // Cygwin unfortunately seems to have <ieeefp.h> but no implementation of fgetmask/fpsetmask
     fp_except cw = fpgetmask();
+
+#ifdef FP_X_DX
+    // on some systems, the devide-by-zero flag is called FP_X_DX
+    fpsetmask(cw & ~(FP_X_INV | FP_X_DX | FP_X_OFL));
+#else
     fpsetmask(cw & ~(FP_X_INV | FP_X_DZ | FP_X_OFL));
+#endif
+
 #endif
 #endif
     // Print and return the result

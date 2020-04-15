@@ -1,12 +1,12 @@
 /*
  *
- *  Copyright (C) 2015-2018, J. Riesmeier, Oldenburg, Germany
+ *  Copyright (C) 2015-2020, J. Riesmeier, Oldenburg, Germany
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  Header file for class CID244_Laterality
  *
- *  Generated automatically from DICOM PS 3.16-2018d
- *  File created on 2018-09-27 16:57:14 by J. Riesmeier
+ *  Generated automatically from DICOM PS 3.16-2020a
+ *  File created on 2020-02-04 12:03:43 by J. Riesmeier
  *
  */
 
@@ -40,13 +40,13 @@ class DCMTK_CMR_EXPORT CID244_Laterality
      */
     enum EnumType
     {
-        /// (G-A100,SRT,"Right")
+        /// (24028007,SCT,"Right"), included from CID 247
         Right,
-        /// (G-A101,SRT,"Left")
+        /// (7771000,SCT,"Left"), included from CID 247
         Left,
-        /// (G-A102,SRT,"Right and left")
-        RightAndLeft,
-        /// (G-A103,SRT,"Unilateral")
+        /// (51440002,SCT,"Bilateral")
+        Bilateral,
+        /// (66459002,SCT,"Unilateral")
         Unilateral
     };
 

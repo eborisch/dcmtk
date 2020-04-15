@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2015-2016, J. Riesmeier, Oldenburg, Germany
+ *  Copyright (C) 2015-2019, J. Riesmeier, Oldenburg, Germany
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation are maintained by
@@ -38,6 +38,8 @@ OFTEST(dcmsr_validCompleteOrEmptyCode)
     const DSRCodedEntryValue code2("0816", "99TEST", "", DSRTypes::CVT_Short, OFFalse /*check*/);
     const DSRCodedEntryValue code3("a little too long\\with VM>1", "99TEST", "some invalid test code", DSRTypes::CVT_Short, OFFalse /*check*/);
     const DSRCodedEntryValue code4("", "", "");
+    const DSRCodedEntryValue code5("urn:0817", "" /* empty coding scheme designator */, "some other code");
+    const DSRCodedEntryValue code6("urn:0817", "" /* empty coding scheme designator */, "1.0" /* non-empty coding scheme version */, "some other code", DSRTypes::CVT_URN, OFFalse /*check*/);
     /* then, perform some tests with these codes */
     OFCHECK(code1.isValid());
     OFCHECK(code1.isComplete());
@@ -51,6 +53,12 @@ OFTEST(dcmsr_validCompleteOrEmptyCode)
     OFCHECK(!code4.isValid());
     OFCHECK(!code4.isComplete());
     OFCHECK(code4.isEmpty());
+    OFCHECK(code5.isValid());
+    OFCHECK(code5.isComplete());
+    OFCHECK(!code5.isEmpty());
+    OFCHECK(!code6.isValid());
+    OFCHECK(code6.isComplete());
+    OFCHECK(!code6.isEmpty());
 }
 
 
@@ -64,7 +72,7 @@ OFTEST(dcmsr_setCodeValueType)
     OFCHECK(codedEntry.setCode("621566751000087104", "SCT", "Invasive diagnostic procedure", DSRTypes::CVT_Long).good());
     OFCHECK_EQUAL(codedEntry.getCodeValueType(), DSRTypes::CVT_Long);
     /* and finally, set a URN code value */
-    OFCHECK(codedEntry.setCode("urn:lex:us:federal:codified.regulation:2013-04-25;45CFR164", "99TEST", "HIPAA Privacy Rule", DSRTypes::CVT_URN).good());
+    OFCHECK(codedEntry.setCode("urn:lex:us:federal:codified.regulation:2013-04-25;45CFR164", "", "HIPAA Privacy Rule", DSRTypes::CVT_URN).good());
     OFCHECK_EQUAL(codedEntry.getCodeValueType(), DSRTypes::CVT_URN);
 }
 
@@ -78,8 +86,10 @@ OFTEST(dcmsr_determineCodeValueType)
     /* then, set a long code value */
     OFCHECK(codedEntry.setCode("621566751000087104", "SCT", "Invasive diagnostic procedure").good());
     OFCHECK_EQUAL(codedEntry.getCodeValueType(), DSRTypes::CVT_Long);
-    /* and finally, set a URN code value */
+    /* and finally, set a URN/URL code value */
     OFCHECK(codedEntry.setCode("urn:lex:us:federal:codified.regulation:2013-04-25;45CFR164", "99TEST", "HIPAA Privacy Rule").good());
+    OFCHECK_EQUAL(codedEntry.getCodeValueType(), DSRTypes::CVT_URN);
+    OFCHECK(codedEntry.setCode("http://dcmtk.org/code/0815", "99TEST", "URL test code").good());
     OFCHECK_EQUAL(codedEntry.getCodeValueType(), DSRTypes::CVT_URN);
     /* also check an empty code */
     codedEntry.clear();
@@ -109,7 +119,7 @@ OFTEST(dcmsr_writeCodeSequence)
     OFCHECK(!dataset.tagExists(DCM_URNCodeValue, OFTrue /*searchIntoSub*/));
     /* and finally, set a URN code value */
     dataset.clear();
-    OFCHECK(codedEntry.setCode("urn:lex:us:federal:codified.regulation:2013-04-25;45CFR164", "99TEST", "HIPAA Privacy Rule", DSRTypes::CVT_URN).good());
+    OFCHECK(codedEntry.setCode("urn:lex:us:federal:codified.regulation:2013-04-25;45CFR164", "" /*empty */, "HIPAA Privacy Rule", DSRTypes::CVT_URN).good());
     OFCHECK(codedEntry.writeSequence(dataset, DCM_ConceptNameCodeSequence).good());
     OFCHECK(!dataset.tagExists(DCM_CodeValue, OFTrue /*searchIntoSub*/));
     OFCHECK(!dataset.tagExists(DCM_LongCodeValue, OFTrue /*searchIntoSub*/));
@@ -131,7 +141,7 @@ OFTEST(dcmsr_useBasicCodedEntry)
     /* first, define some code constants */
     const DSRBasicCodedEntry code1("121206", "DCM", "Distance");
     const DSRBasicCodedEntry code2("621566751000087104", "SCT", "Invasive diagnostic procedure", DSRTypes::CVT_auto);
-    const DSRBasicCodedEntry code3("urn:lex:us:federal:codified.regulation:2013-04-25;45CFR164", "99TEST", "HIPAA Privacy Rule", DSRTypes::CVT_auto);
+    const DSRBasicCodedEntry code3("urn:lex:us:federal:codified.regulation:2013-04-25;45CFR164", "" /* empty */, "HIPAA Privacy Rule", DSRTypes::CVT_auto);
     /* then, use them as a coded entry value */
     DSRCodedEntryValue codedEntry(code1);
     OFCHECK(codedEntry.isValid());
@@ -156,7 +166,7 @@ OFTEST(dcmsr_useBasicCodedEntry)
     OFCHECK(!codedEntry.usesEnhancedEncodingMode());
     OFCHECK_EQUAL(codedEntry.getCodeValueType(), DSRTypes::CVT_URN);
     OFCHECK_EQUAL(codedEntry.getCodeValue(), "urn:lex:us:federal:codified.regulation:2013-04-25;45CFR164");
-    OFCHECK_EQUAL(codedEntry.getCodingSchemeDesignator(), "99TEST");
+    OFCHECK_EQUAL(codedEntry.getCodingSchemeDesignator(), "" /*empty*/);
     OFCHECK_EQUAL(codedEntry.getCodingSchemeVersion(), "" /*empty*/);
     OFCHECK_EQUAL(codedEntry.getCodeMeaning(), "HIPAA Privacy Rule");
 }

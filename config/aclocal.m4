@@ -57,7 +57,7 @@ dnl     #undef HAVE_PROTOTYPE_GETHOSTID
 dnl AC_CHECK_PROTOTYPE(FUNCTION, HEADER-FILE..., ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND])
 AC_DEFUN(AC_CHECK_PROTOTYPE,
 [AC_MSG_CHECKING([ifelse([$2], , [predefined prototype for $1], [prototype for $1 (in $2)])])
-AH_TEMPLATE(AS_TR_CPP(HAVE_PROTOTYPE_$1), [Define if your system has a prototype for $1 in $2])
+AH_TEMPLATE(AS_TR_CPP(HAVE_PROTOTYPE_$1), [Define if your system has a prototype for $1 in $2.])
 ifelse([$3], , :, [$3])
 
 ifelse([$2], , [ac_includes=""
@@ -112,7 +112,7 @@ dnl   already been found using the AC_CHECK_HEADERS(header) macro.
 dnl AC_CHECK_COMPILES(FUNCTION, HEADER-FILE..., CODE, ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND])
 AC_DEFUN(AC_CHECK_COMPILES,
 [AC_MSG_CHECKING([ifelse([$2], , [for $1], [for $1 (in $2)])])
-AH_TEMPLATE(AS_TR_CPP(HAVE_PROTOTYPE_$1), [Define if your system has a prototype for $1 in $2])
+AH_TEMPLATE(AS_TR_CPP(HAVE_PROTOTYPE_$1), [Define if your system has a prototype for $1 in $2.])
 ifelse([$2], , [ac_includes=""
 ],
 [ac_includes=""
@@ -152,7 +152,7 @@ dnl AC_CHECK_DECLARATION(FUNCTION, C-HEADER-FILE..., C++-HEADER-FILE..., ACTION-
 AC_DEFUN(AC_CHECK_DECLARATION,
 [
 AC_MSG_CHECKING([ifelse([$2 $3], , [predefined type $1], [ifelse([$2], , [declaration for $1 (in $3)], [ifelse([$3], , [declaration for $1 (in $2)], [declaration for $1 (in $2 $3)])])])])
-AH_TEMPLATE(AS_TR_CPP(HAVE_DECLARATION_$1), [Define if your system has a declaration for $1 in $2 $3])
+AH_TEMPLATE(AS_TR_CPP(HAVE_DECLARATION_$1), [Define if your system has a declaration for $1 in $2 $3.])
 ifelse([$2], , [ac_includes=""
 ],
 [ac_includes=""
@@ -217,7 +217,7 @@ AC_DEFUN(AC_CHECK_INTP_SELECT,
 [AC_MSG_CHECKING([ifelse([$1], , [if select() needs int* parameters],
 [if select() needs int* parameters (in $1)])])
 AH_TEMPLATE([HAVE_INTP_SELECT], [Define if your system declares argument 2-4 of select()
-   as int * instead of struct fd_set *])
+   as int * instead of struct fd_set *.])
 ifelse([$1], , [ac_includes=""
 ],
 [ac_includes=""
@@ -322,7 +322,7 @@ dnl   standard name space.
 dnl AC_CHECK_STD_NAMESPACE
 AC_DEFUN(AC_CHECK_STD_NAMESPACE,
 [AC_MSG_CHECKING([for C++ standard namespace])
-AH_TEMPLATE([HAVE_STD_NAMESPACE], [Define if ANSI standard C++ includes use std namespace])
+AH_TEMPLATE([HAVE_STD_NAMESPACE], [Define if ANSI standard C++ includes use std namespace.])
 AC_CACHE_VAL(ac_cv_check_std_namespace,
 [AC_TRY_COMPILE_AND_LINK([
 #include <iostream>
@@ -351,7 +351,7 @@ dnl   inline, no template methods and no typedefs in the class
 dnl AC_CHECK_CLASS_TEMPLATE
 AC_DEFUN(AC_CHECK_CLASS_TEMPLATE,
 [AC_MSG_CHECKING([for C++ class template])
-AH_TEMPLATE([HAVE_CLASS_TEMPLATE], [Define if your C++ compiler can work with class templates])
+AH_TEMPLATE([HAVE_CLASS_TEMPLATE], [Define if your C++ compiler can work with class templates.])
 AC_CACHE_VAL(ac_cv_check_class_template,
 [AC_TRY_COMPILE_AND_LINK([
 template <class T>
@@ -392,7 +392,7 @@ dnl   using function templates.
 dnl AC_CHECK_FUNCTION_TEMPLATE
 AC_DEFUN(AC_CHECK_FUNCTION_TEMPLATE,
 [AC_MSG_CHECKING([for C++ function template])
-AH_TEMPLATE([HAVE_FUNCTION_TEMPLATE], [Define if your C++ compiler can work with function templates])
+AH_TEMPLATE([HAVE_FUNCTION_TEMPLATE], [Define if your C++ compiler can work with function templates.])
 AC_CACHE_VAL(ac_cv_check_function_template,
 [AC_TRY_COMPILE_AND_LINK([
 template <class T>
@@ -424,7 +424,7 @@ dnl   using static methods in template classes
 dnl AC_CHECK_STATIC_TEMPLATE_METHOD
 AC_DEFUN(AC_CHECK_STATIC_TEMPLATE_METHOD,
 [AC_MSG_CHECKING([for C++ static methods in class templates])
-AH_TEMPLATE([HAVE_STATIC_TEMPLATE_METHOD], [Define if your C++ compiler can work with static methods in class templates])
+AH_TEMPLATE([HAVE_STATIC_TEMPLATE_METHOD], [Define if your C++ compiler can work with static methods in class templates.])
 AC_CACHE_VAL(ac_cv_check_static_template_method,
 [AC_TRY_COMPILE_AND_LINK([
 void additive(int & i)
@@ -465,7 +465,7 @@ dnl     template<> int classname<int>::functionname()
 dnl AC_CHECK_EXPLICIT_TEMPLATE_SPECIALIZATION
 AC_DEFUN(AC_CHECK_EXPLICIT_TEMPLATE_SPECIALIZATION,
 [AC_MSG_CHECKING([for C++ explicit template specialization syntax])
-AH_TEMPLATE([HAVE_EXPLICIT_TEMPLATE_SPECIALIZATION], [Define if your C++ compiler supports the explicit template specialization syntax])
+AH_TEMPLATE([HAVE_EXPLICIT_TEMPLATE_SPECIALIZATION], [Define if your C++ compiler supports the explicit template specialization syntax.])
 AC_CACHE_VAL(ac_cv_check_explicit_template_specialization,
 [AC_TRY_COMPILE([
 template<class T>
@@ -575,7 +575,7 @@ dnl AC_CHECK_POLL_H([ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]])
 AC_DEFUN(AC_CHECK_POLL_H,
 [
 AC_MSG_CHECKING([for usable poll.h])
-AH_TEMPLATE(AS_TR_CPP(DCMTK_HAVE_POLL), [Define if your system has a usable <poll.h>])
+AH_TEMPLATE(AS_TR_CPP(DCMTK_HAVE_POLL), [Define if your system has a usable <poll.h>.])
 AC_CACHE_VAL(ac_cv_header_poll_h,
 [
 case "${host}" in
@@ -647,7 +647,7 @@ AC_DEFUN(AC_CHECK_INTP_ACCEPT,
 [AC_MSG_CHECKING([ifelse([$1], , [if accept() needs int* parameters],
 [if accept() needs int* parameters (in $1)])])
 AH_TEMPLATE([HAVE_INTP_ACCEPT], [Define if your system declares argument 3 of accept()
-   as int * instead of size_t * or socklen_t *])
+   as int * instead of size_t * or socklen_t *.])
 ifelse([$1], , [ac_includes=""
 ],
 [ac_includes=""
@@ -796,7 +796,7 @@ dnl AC_MY_C_CONST works like the standard script AC_C_CONST
 dnl but defines HAVE_C_CONST instead of redefining "const" directly.
 
 AC_DEFUN(AC_MY_C_CONST,
-[AH_TEMPLATE([HAVE_C_CONST], [Define if "const" is supported by the C compiler])
+[AH_TEMPLATE([HAVE_C_CONST], [Define if "const" is supported by the C compiler.])
 dnl This message is consistent in form with the other checking messages,
 dnl and with the result message.
 AC_CACHE_CHECK([for working const], ac_cv_my_c_const,
@@ -857,7 +857,7 @@ dnl AC_MY_C_CHAR_UNSIGNED works like the standard script AC_C_CHAR_UNSIGNED
 dnl but defines C_CHAR_UNSIGNED instead of __CHAR_UNSIGNED__.
 
 AC_DEFUN(AC_MY_C_CHAR_UNSIGNED,
-[AH_TEMPLATE([C_CHAR_UNSIGNED], [Define if char is unsigned on the C compiler])
+[AH_TEMPLATE([C_CHAR_UNSIGNED], [Define if char is unsigned on the C compiler.])
 AC_CACHE_CHECK(whether char is unsigned, ac_cv_my_c_char_unsigned,
 [if test "$GCC" = yes; then
   # GCC predefines this symbol on systems where it applies.
@@ -1019,7 +1019,7 @@ AC_DEFUN(AC_CHECK_INTP_GETSOCKOPT,
 [AC_MSG_CHECKING([ifelse([$1], , [if getsockopt() needs int* parameters],
 [if getsockopt() needs int* parameters (in $1)])])
 AH_TEMPLATE([HAVE_INTP_GETSOCKOPT], [Define if your system declares argument 5 of getsockopt()
-   as int * instead of size_t * or socklen_t])
+   as int * instead of size_t * or socklen_t.])
 ifelse([$1], , [ac_includes=""
 ],
 [ac_includes=""
@@ -1084,7 +1084,7 @@ dnl AC_CHECK_ELLIPSE_SIGNAL_HANDLER(HEADER-FILE..., ACTION-IF-FOUND [, ACTION-IF
 AC_DEFUN(AC_CHECK_ELLIPSE_SIGNAL_HANDLER,
 [AC_MSG_CHECKING([ifelse([$1], , [if signal() callback needs ellipse],
 [if signal() callback needs ellipse (in $1)])])
-AH_TEMPLATE([SIGNAL_HANDLER_WITH_ELLIPSE], [Define if signal handlers need ellipse (...) parameters])
+AH_TEMPLATE([SIGNAL_HANDLER_WITH_ELLIPSE], [Define if signal handlers need ellipse (...) parameters.])
 ifelse([$1], , [ac_includes=""
 ],
 [ac_includes=""
@@ -1152,7 +1152,7 @@ dnl   use C++ language features in <math.h>.
 dnl AC_INCLUDE_MATH_H_AS_CXX(HEADER-FILE..., ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND])
 AC_DEFUN(AC_INCLUDE_MATH_H_AS_CXX,
 [AC_MSG_CHECKING([if <math.h> fails if included extern "C"])
-AH_TEMPLATE([INCLUDE_MATH_H_AS_CXX], [Define if <math.h> fails if included extern "C"])
+AH_TEMPLATE([INCLUDE_MATH_H_AS_CXX], [Define if <math.h> fails if included extern "C".])
 AC_CACHE_VAL(ac_cv_include_math_h_as_cxx,
 [AC_TRY_COMPILE([
 extern "C"
@@ -1182,35 +1182,6 @@ else
 fi
 ])
 
-
-dnl AC_CHECK_CXX_BOOL checks if bool is a built-in C++ type
-dnl   (which is not the case on older compilers).
-
-dnl AC_CHECK_CXX_BOOL(ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND])
-AC_DEFUN(AC_CHECK_CXX_BOOL,
-[AC_MSG_CHECKING([if bool is built-in type])
-AH_TEMPLATE([HAVE_CXX_BOOL], [Define if bool is a built-in type])
-AC_CACHE_VAL(ac_cv_have_cxx_bool,
-[AC_TRY_COMPILE([],[
-bool b1 = true;
-bool b2 = false;
-],
-eval "ac_cv_have_cxx_bool=yes",
-eval "ac_cv_have_cxx_bool=no")])
-if eval "test \"`echo $ac_cv_have_cxx_bool`\" = yes"; then
-  AC_MSG_RESULT(yes)
-changequote(, )dnl
-  ac_tr_prototype=HAVE_CXX_BOOL
-changequote([, ])dnl
-  AC_DEFINE_UNQUOTED($ac_tr_prototype)
-  ifelse([$1], , :, [$1])
-else
-  AC_MSG_RESULT(no)
-  ifelse([$2], , , [$2])
-fi
-])
-
-
 dnl AC_CHECK_CXX_VOLATILE checks if volatile is a built-in C++ keyword
 dnl   (which is not the case on older compilers).
 
@@ -1229,7 +1200,7 @@ if eval "test \"`echo $ac_cv_have_cxx_volatile`\" = yes"; then
 changequote(, )dnl
   ac_tr_prototype=HAVE_CXX_VOLATILE
 changequote([, ])dnl
-  AC_DEFINE_UNQUOTED($ac_tr_prototype, ,[Define if volatile is a known keyword])
+  AC_DEFINE_UNQUOTED($ac_tr_prototype, ,[Define if volatile is a known keyword.])
   ifelse([$1], , :, [$1])
 else
   AC_MSG_RESULT(no)
@@ -1253,7 +1224,7 @@ ac_cv_cxx_typename,
  AC_LANG_RESTORE
 ])
 if test "$ac_cv_cxx_typename" = yes; then
-  AC_DEFINE(HAVE_TYPENAME,,[define if the compiler recognizes typename])
+  AC_DEFINE(HAVE_TYPENAME,,[Define if the compiler recognizes typename.])
 fi
 ])
 
@@ -1272,7 +1243,7 @@ ac_cv_cxx_const_cast,
  AC_LANG_RESTORE
 ])
 if test "$ac_cv_cxx_const_cast" = yes; then
-  AC_DEFINE(HAVE_CONST_CAST,,[define if the compiler supports const_cast<>])
+  AC_DEFINE(HAVE_CONST_CAST,,[Define if the compiler supports const_cast<>.])
 fi
 ])
 
@@ -1294,7 +1265,7 @@ Derived d; Base& b=d; return dynamic_cast<Derived*>(&b) ? 0 : 1;],
  AC_LANG_RESTORE
 ])
 if test "$ac_cv_cxx_dynamic_cast" = yes; then
-  AC_DEFINE(HAVE_DYNAMIC_CAST,,[define if the compiler supports dynamic_cast<>])
+  AC_DEFINE(HAVE_DYNAMIC_CAST,,[Define if the compiler supports dynamic_cast<>.])
 fi
 ])
 
@@ -1319,7 +1290,7 @@ Derived d;Base& b=d;Unrelated& e=reinterpret_cast<Unrelated&>(b);return g(e);],
 ])
 if test "$ac_cv_cxx_reinterpret_cast" = yes; then
   AC_DEFINE(HAVE_REINTERPRET_CAST,,
-            [define if the compiler supports reinterpret_cast<>])
+            [Define if the compiler supports reinterpret_cast<>.])
 fi
 ])
 
@@ -1343,7 +1314,7 @@ Derived d; Base& b = d; Derived& s = static_cast<Derived&> (b); return g (s);],
 ])
 if test "$ac_cv_cxx_static_cast" = yes; then
   AC_DEFINE(HAVE_STATIC_CAST,,
-            [define if the compiler supports static_cast<>])
+            [Define if the compiler supports static_cast<>.])
 fi
 ])
 
@@ -1362,7 +1333,7 @@ ac_cv_cxx_std_nothrow,
  AC_LANG_RESTORE
 ])
 if test "$ac_cv_cxx_std_nothrow" = yes; then
-  AC_DEFINE(HAVE_STD__NOTHROW,, [Define if the compiler supports std::nothrow])
+  AC_DEFINE(HAVE_STD__NOTHROW,, [Define if the compiler supports std::nothrow.])
 fi
 ])
 
@@ -1371,7 +1342,7 @@ dnl AC_CXX_NOTHROW_DELETE checks if the compiler supports non-throwing delete us
 dnl std::nothrow.
 
 AC_DEFUN([AC_CXX_NOTHROW_DELETE],
-[AH_TEMPLATE([HAVE_NOTHROW_DELETE], [Define if the compiler supports operator delete (std::nothrow)])
+[AH_TEMPLATE([HAVE_NOTHROW_DELETE], [Define if the compiler supports operator delete (std::nothrow.)])
 AC_CACHE_CHECK(whether the compiler supports operator delete (std::nothrow),
 ac_cv_cxx_nothrow_delete,
 [AC_LANG_SAVE
@@ -1381,7 +1352,7 @@ ac_cv_cxx_nothrow_delete,
  AC_LANG_RESTORE
 ])
 if test "$ac_cv_cxx_nothrow_delete" = yes; then
-  AC_DEFINE(HAVE_NOTHROW_DELETE,, [Define if the compiler supports operator delete (std::nothrow)])
+  AC_DEFINE(HAVE_NOTHROW_DELETE,, [Define if the compiler supports operator delete (std::nothrow.)])
 fi
 ])
 
@@ -1401,60 +1372,6 @@ ac_cv_cxx_static_assert,
 ])
 if test "$ac_cv_cxx_static_assert" = yes; then
   AC_DEFINE(HAVE_STATIC_ASSERT,, [Define if the compiler supports static_assert])
-fi
-])
-
-dnl AC_LIBTIFF_LZW_COMPRESSION checks if libtiff supports LZW compression.
-
-AC_DEFUN([AC_LIBTIFF_LZW_COMPRESSION],
-[AH_TEMPLATE([HAVE_LIBTIFF_LZW_COMPRESSION], [Define if libtiff supports LZW compression])
-AC_CACHE_CHECK(whether libtiff supports LZW compression,
-ac_cv_libtiff_lzw_compression,
-[AC_TRY_RUN(
-changequote({{, }})dnl
-{{
-extern "C" {
-#include <tiffio.h>
-}
-
-int main()
-{
-  const char *data[256];
-  for (int j=0; j<256; ++j) data[j]= 0;
-
-  int OK = 1;
-  TIFF *tif = TIFFOpen("lzwtest.tif", "w");
-  if (tif)
-  {
-    TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, 16);
-    TIFFSetField(tif, TIFFTAG_IMAGELENGTH, 16);
-    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
-    TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
-    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
-    TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
-    TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB);
-    TIFFSetField(tif, TIFFTAG_DOCUMENTNAME, "unnamed");
-    TIFFSetField(tif, TIFFTAG_IMAGEDESCRIPTION, "test");
-    TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 1);
-    TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, 512);
-    TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
-
-    for (unsigned long i=0; (i < 16) && OK; i++)
-    {
-      if (TIFFWriteScanline(tif, data + (i << 4), i, 0) < 0) OK = 0;
-    }
-    TIFFFlushData(tif);
-    TIFFClose(tif);
-  }
-  if (OK) return 0; else return 10;
-}
-
-}}
-changequote([, ])dnl
- , ac_cv_libtiff_lzw_compression=yes, ac_cv_libtiff_lzw_compression=no, ac_cv_libtiff_lzw_compression=no)
-])
-if test "$ac_cv_libtiff_lzw_compression" = yes; then
-  AC_DEFINE(HAVE_LIBTIFF_LZW_COMPRESSION,, [Define if libtiff supports LZW compression])
 fi
 ])
 
@@ -1848,6 +1765,52 @@ AS_HELP_STRING([LONGOPTION=DIR], [location of LIBNAME includes and libraries]),
   m4_popdef([LIBNAME])dnl
 ])
 
+dnl
+dnl This macro adds the option --with-openjpeginc to configure. If this option
+dnl is specified, include/ and lib/ are added to CPPFLAGS / LDFLAGS.
+dnl
+dnl AC_MY_OPENJPEG_PATH()
+AC_DEFUN([AC_MY_OPENJPEG_PATH],
+[
+  AC_REQUIRE([AC_MY_LIB_PATH_RPATH])dnl
+  m4_pushdef([OPTION], [openjpeginc])dnl
+  m4_pushdef([LONGOPTION], [--with-openjpeginc])dnl
+  m4_pushdef([LIBNAME], [m4_default([OpenJPEG], [openjpeg])])dnl
+  AC_ARG_WITH([OPTION], dnl
+dnl The following line is underquoted on purpose, else the help line will be
+dnl discarded because it is equal to an earlier help line.
+AS_HELP_STRING([LONGOPTION=DIR], [location of LIBNAME includes and libraries (MUST be specified, otherwise OpenJPEG will not be found)]),
+    [AS_CASE([$withval],
+      [yes|no], [
+        AC_MSG_WARN([LONGOPTION called without argument - will use default])
+      ],
+      [
+        if test ! -d ${withval}; then
+          AC_MSG_ERROR([called with LONGOPTION but LIBNAME base directory ${withval} does not exist or is not a directory.])
+        fi
+
+        dnl try to find openjpeg subdirectory within given include path
+        OPENJPEGINCLUDEPATH=`(
+          eval echo "${withval}/include/openjpeg*"
+        )`
+
+        dnl if not found, use include path following standard conventions
+        if test ! -d "${OPENJPEGINCLUDEPATH}"; then
+          OPENJPEGINCLUDEPATH="${withval}/include"
+        fi
+
+        CPPFLAGS="-I${OPENJPEGINCLUDEPATH} $CPPFLAGS"
+        LDFLAGS="-L${withval}/lib $LDFLAGS"
+        if test "x$dcmtk_cv_rpath_works" = "xyes"; then
+          LDFLAGS="-Wl,-rpath,${withval}/lib $LDFLAGS"
+        fi
+      ])
+    ])dnl
+  m4_popdef([OPTION])dnl
+  m4_popdef([LONGOPTION])dnl
+  m4_popdef([LIBNAME])dnl
+])
+
 AC_DEFUN([AC_CHECK_SYNC_FN],
 [
     AC_MSG_CHECKING([for $1])
@@ -1863,7 +1826,29 @@ AC_DEFUN([AC_CHECK_SYNC_FN],
     )
     if test "$dcmtk_have_sync_fn" = yes; then
         AC_MSG_RESULT([yes])
-        AC_DEFINE($2,[1],[Define if $1 is available])
+        AC_DEFINE($2,[1],[Define if $1 is available.])
+    else
+        AC_MSG_RESULT([no])
+    fi
+])
+
+AC_DEFUN([AC_CHECK_ITERATOR_CATEGORY],
+[
+    AC_MSG_CHECKING([whether iterator category $1 is declared])
+    AC_COMPILE_IFELSE(
+    [
+        AC_LANG_SOURCE(
+        [
+            #include <iterator>
+            int main(){typedef std::$1_iterator_tag category;return 0;}
+        ])
+    ],
+    [dcmtk_have_iter_cat=[yes]],
+    [dcmtk_have_iter_cat=[no]]
+    )
+    if test "$dcmtk_have_iter_cat" = yes; then
+        AC_MSG_RESULT([yes])
+        AC_DEFINE($2,[1],[Define if the $1 iterator category is supported.])
     else
         AC_MSG_RESULT([no])
     fi
@@ -1884,7 +1869,7 @@ AC_DEFUN([AC_CHECK_ALIGNOF],
     )
     if test "$dcmtk_have_alignof" = yes; then
         AC_MSG_RESULT([yes])
-        AC_DEFINE($1,[1],[Define if __alignof__ is available])
+        AC_DEFINE($1,[1],[Define if __alignof__ is available.])
     else
         AC_MSG_RESULT([no])
     fi
@@ -1905,7 +1890,7 @@ AC_DEFUN([AC_CHECK_ATTRIBUTE_ALIGNED],
     )
     if test "$dcmtk_have_attribute_aligned" = yes; then
         AC_MSG_RESULT([yes])
-        AC_DEFINE($1,[1],[Define if __attribute__((aligned)) is available])
+        AC_DEFINE($1,[1],[Define if __attribute__((aligned)) is available.])
     else
         AC_MSG_RESULT([no])
     fi
@@ -1932,7 +1917,7 @@ AC_DEFUN([AC_CHECK_ATTRIBUTE_ALIGNED_SUPPORTS_TEMPLATES],
     )
     if test "$dcmtk_attribute_aligned_supports_templates" = yes; then
         AC_MSG_RESULT([yes])
-        AC_DEFINE($1,[1],[Define if __attribute__((aligned)) supports templates])
+        AC_DEFINE($1,[1],[Define if __attribute__((aligned)) supports templates.])
     else
         AC_MSG_RESULT([no])
     fi
@@ -1965,7 +1950,7 @@ AC_DEFUN([AC_CHECK_DEFAULT_CONSTRUCTOR_DETECTION_VIA_SFINAE],
     )
     if test "$dcmtk_default_constructor_detection_via_sfinae" = yes; then
         AC_MSG_RESULT([yes])
-        AC_DEFINE($1,[1],[Define if the compiler supports default constructor detection via SFINAE])
+        AC_DEFINE($1,[1],[Define if the compiler supports default constructor detection via SFINAE.])
     else
         AC_MSG_RESULT([no])
     fi

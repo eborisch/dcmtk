@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2017, OFFIS e.V.
+ *  Copyright (C) 1994-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -71,6 +71,8 @@ const unsigned short OFM_dcmseg   = 30;
 const unsigned short OFM_dcmfg    = 31;
 const unsigned short OFM_dcmtract = 32;
 const unsigned short OFM_dcmpmap  = 33;
+const unsigned short OFM_dcmelekt = 34;
+const unsigned short OFM_dcmect   = 35;
 
 // condition constants
 
@@ -167,6 +169,8 @@ extern DCMTK_DCMDATA_EXPORT const OFConditionConst EC_UndefinedLengthOBOW;
 extern DCMTK_DCMDATA_EXPORT const OFConditionConst EC_VOI_LUT_OBOW;
 /// Pixel data in top level dataset in compressed Transfer Syntax uses explicit length (undefined required)
 extern DCMTK_DCMDATA_EXPORT const OFConditionConst EC_PixelDataExplLengthIllegal;
+/// Element length is larger than 32-bit length field permits
+extern DCMTK_DCMDATA_EXPORT const OFConditionConst EC_ElemLengthExceeds32BitField;
 //@}
 
 // status code constants

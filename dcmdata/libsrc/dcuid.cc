@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2018, OFFIS e.V.
+ *  Copyright (C) 1994-2020, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -139,6 +139,9 @@ static const UIDNameMap uidNameMap[] = {
     { UID_MPEG4StereoHighProfileLevel4_2TransferSyntax,        "MPEG4StereoHighProfile/Level4.2" },
     { UID_HEVCMainProfileLevel5_1TransferSyntax,               "HEVCMainProfile/Level5.1" },
     { UID_HEVCMain10ProfileLevel5_1TransferSyntax,             "HEVCMain10Profile/Level5.1" },
+    { UID_SMPTEST2110_20_UncompressedProgressiveActiveVideoTransferSyntax, "SMPTEST2110-20:UncompressedProgressiveActiveVideo" },
+    { UID_SMPTEST2110_20_UncompressedInterlacedActiveVideoTransferSyntax, "SMPTEST2110-20:UncompressedInterlacedActiveVideo" },
+    { UID_SMPTEST2110_30_PCMDigitalAudioTransferSyntax,        "SMPTEST2110-30:PCMDigitalAudio" },
     { UID_RFC2557MIMEEncapsulationTransferSyntax,              "RFC2557MIMEEncapsulation" },
     { UID_XMLEncodingTransferSyntax,                           "XMLEncoding" },
     { UID_PrivateGE_LEI_WithBigEndianPixelDataTransferSyntax,  "PrivateGELittleEndianImplicitWithBigEndianPixelData" },
@@ -157,6 +160,7 @@ static const UIDNameMap uidNameMap[] = {
     { UID_BreastProjectionXRayImageStorageForProcessing,       "BreastProjectionXRayImageStorageForProcessing" },
     { UID_BreastTomosynthesisImageStorage,                     "BreastTomosynthesisImageStorage" },
     { UID_CardiacElectrophysiologyWaveformStorage,             "CardiacElectrophysiologyWaveformStorage" },
+    { UID_CArmPhotonElectronRadiationStorage,                  "CArmPhotonElectronRadiationStorage" },
     { UID_ChestCADSRStorage,                                   "ChestCADSRStorage" },
     { UID_ColonCADSRStorage,                                   "ColonCADSRStorage" },
     { UID_ColorPaletteStorage,                                 "ColorPaletteStorage" },
@@ -178,6 +182,8 @@ static const UIDNameMap uidNameMap[] = {
     { UID_DigitalXRayImageStorageForPresentation,              "DigitalXRayImageStorageForPresentation" },
     { UID_DigitalXRayImageStorageForProcessing,                "DigitalXRayImageStorageForProcessing" },
     { UID_EncapsulatedCDAStorage,                              "EncapsulatedCDAStorage" },
+    { UID_EncapsulatedMTLStorage,                              "EncapsulatedMTLStorage" },
+    { UID_EncapsulatedOBJStorage,                              "EncapsulatedOBJStorage" },
     { UID_EncapsulatedPDFStorage,                              "EncapsulatedPDFStorage" },
     { UID_EncapsulatedSTLStorage,                              "EncapsulatedSTLStorage" },
     { UID_EnhancedCTImageStorage,                              "EnhancedCTImageStorage" },
@@ -229,6 +235,8 @@ static const UIDNameMap uidNameMap[] = {
     { UID_OphthalmicVisualFieldStaticPerimetryMeasurementsStorage, "OphthalmicVisualFieldStaticPerimetryMeasurementsStorage" },
     { UID_ParametricMapStorage,                                "ParametricMapStorage" },
     { UID_PatientRadiationDoseSRStorage,                       "PatientRadiationDoseSRStorage" },
+    { UID_PerformedImagingAgentAdministrationSRStorage,        "PerformedImagingAgentAdministrationSRStorage" },
+    { UID_PlannedImagingAgentAdministrationSRStorage,          "PlannedImagingAgentAdministrationSRStorage" },
     { UID_PositronEmissionTomographyImageStorage,              "PositronEmissionTomographyImageStorage" },
     { UID_ProcedureLogStorage,                                 "ProcedureLogStorage" },
     { UID_ProtocolApprovalStorage,                             "ProtocolApprovalStorage" },
@@ -237,6 +245,7 @@ static const UIDNameMap uidNameMap[] = {
     { UID_RawDataStorage,                                      "RawDataStorage" },
     { UID_RealWorldValueMappingStorage,                        "RealWorldValueMappingStorage" },
     { UID_RespiratoryWaveformStorage,                          "RespiratoryWaveformStorage" },
+    { UID_RoboticArmRadiationStorage,                          "RoboticArmRadiationStorage" },
     { UID_RTBeamsDeliveryInstructionStorage,                   "RTBeamsDeliveryInstructionStorage" },
     { UID_RTBeamsTreatmentRecordStorage,                       "RTBeamsTreatmentRecordStorage" },
     { UID_RTBrachyApplicationSetupDeliveryInstructionStorage,  "RTBrachyApplicationSetupDeliveryInstructionStorage" },
@@ -245,7 +254,10 @@ static const UIDNameMap uidNameMap[] = {
     { UID_RTImageStorage,                                      "RTImageStorage" },
     { UID_RTIonBeamsTreatmentRecordStorage,                    "RTIonBeamsTreatmentRecordStorage" },
     { UID_RTIonPlanStorage,                                    "RTIonPlanStorage" },
+    { UID_RTPhysicianIntentStorage,                            "RTPhysicianIntentStorage" },
     { UID_RTPlanStorage,                                       "RTPlanStorage" },
+    { UID_RTRadiationSetStorage,                               "RTRadiationSetStorage" },
+    { UID_RTSegmentAnnotationStorage,                          "RTSegmentAnnotationStorage" },
     { UID_RTStructureSetStorage,                               "RTStructureSetStorage" },
     { UID_RTTreatmentSummaryRecordStorage,                     "RTTreatmentSummaryRecordStorage" },
     { UID_SecondaryCaptureImageStorage,                        "SecondaryCaptureImageStorage" },
@@ -260,6 +272,7 @@ static const UIDNameMap uidNameMap[] = {
     { UID_SurfaceScanMeshStorage,                              "SurfaceScanMeshStorage" },
     { UID_SurfaceScanPointCloudStorage,                        "SurfaceScanPointCloudStorage" },
     { UID_SurfaceSegmentationStorage,                          "SurfaceSegmentationStorage" },
+    { UID_TomotherapeuticRadiationStorage,                     "TomotherapeuticRadiationStorage" },
     { UID_TractographyResultsStorage,                          "TractographyResultsStorage" },
     { UID_TwelveLeadECGWaveformStorage,                        "TwelveLeadECGWaveformStorage" },
     { UID_UltrasoundImageStorage,                              "UltrasoundImageStorage" },
@@ -453,6 +466,12 @@ static const UIDNameMap uidNameMap[] = {
     { UID_DisplaySystemSOPClass,                               "DisplaySystemSOPClass" },
     { UID_DisplaySystemSOPInstance,                            "DisplaySystemSOPInstance" },
 
+    // Real-Time Video
+    { UID_VideoEndoscopicImageRealTimeCommunicationSOPClass,   "VideoEndoscopicImageRealTimeCommunicationSOPClass" },
+    { UID_VideoPhotographicImageRealTimeCommunicationSOPClass, "VideoPhotographicImageRealTimeCommunicationSOPClass" },
+    { UID_AudioWaveformRealTimeCommunicationSOPClass,          "AudioWaveformRealTimeCommunicationSOPClass" },
+    { UID_RenditionSelectionDocumentRealTimeCommunicationSOPClass, "RenditionSelectionDocumentRealTimeCommunicationSOPClass" },
+
     // Other
     { UID_RETIRED_BasicStudyContentNotificationSOPClass,       "RETIRED_BasicStudyContentNotificationSOPClass" },
     { UID_RETIRED_StudyComponentManagementSOPClass,            "RETIRED_StudyComponentManagementSOPClass" },
@@ -509,6 +528,7 @@ static const UIDNameMap uidNameMap[] = {
     // Well-known Frame of References
     { UID_ICBM452T1FrameOfReference,                           "ICBM452T1FrameOfReference" },
     { UID_ICBMSingleSubjectMRIFrameOfReference,                "ICBMSingleSubjectMRIFrameOfReference" },
+    { UID_IEC61217FixedCoordinateSystemFrameOfReference,       "IEC61217FixedCoordinateSystemFrameOfReference" },
     { UID_SPM2AVG152PDFrameOfReference,                        "SPM2AVG152PDFrameOfReference" },
     { UID_SPM2AVG152T1FrameOfReference,                        "SPM2AVG152T1FrameOfReference" },
     { UID_SPM2AVG152T2FrameOfReference,                        "SPM2AVG152T2FrameOfReference" },
@@ -526,6 +546,7 @@ static const UIDNameMap uidNameMap[] = {
     { UID_SPM2T2FrameOfReference,                              "SPM2T2FrameOfReference" },
     { UID_SPM2TRANSMFrameOfReference,                          "SPM2TRANSMFrameOfReference" },
     { UID_SPM2WHITEFrameOfReference,                           "SPM2WHITEFrameOfReference" },
+    { UID_StandardRoboticCoordinateSystemFrameOfReference,     "StandardRoboticCoordinateSystemFrameOfReference" },
     { UID_TalairachBrainAtlasFrameOfReference,                 "TalairachBrainAtlasFrameOfReference" },
 
     // UTC Synchronization Frame of Reference
@@ -586,6 +607,7 @@ const char* dcmAllStorageSOPClassUIDs[] = {
     UID_BreastProjectionXRayImageStorageForProcessing,
     UID_BreastTomosynthesisImageStorage,
     UID_CardiacElectrophysiologyWaveformStorage,
+    UID_CArmPhotonElectronRadiationStorage,
     UID_ChestCADSRStorage,
     UID_ColonCADSRStorage,
     UID_ColorSoftcopyPresentationStateStorage,
@@ -605,6 +627,8 @@ const char* dcmAllStorageSOPClassUIDs[] = {
     UID_DigitalXRayImageStorageForPresentation,
     UID_DigitalXRayImageStorageForProcessing,
     UID_EncapsulatedCDAStorage,
+    UID_EncapsulatedMTLStorage,
+    UID_EncapsulatedOBJStorage,
     UID_EncapsulatedPDFStorage,
     UID_EncapsulatedSTLStorage,
     UID_EnhancedCTImageStorage,
@@ -651,6 +675,8 @@ const char* dcmAllStorageSOPClassUIDs[] = {
     UID_OphthalmicVisualFieldStaticPerimetryMeasurementsStorage,
     UID_ParametricMapStorage,
     UID_PatientRadiationDoseSRStorage,
+    UID_PerformedImagingAgentAdministrationSRStorage,
+    UID_PlannedImagingAgentAdministrationSRStorage,
     UID_PositronEmissionTomographyImageStorage,
     UID_ProcedureLogStorage,
     UID_PseudoColorSoftcopyPresentationStateStorage,
@@ -658,6 +684,7 @@ const char* dcmAllStorageSOPClassUIDs[] = {
     UID_RawDataStorage,
     UID_RealWorldValueMappingStorage,
     UID_RespiratoryWaveformStorage,
+    UID_RoboticArmRadiationStorage,
     UID_RTBeamsDeliveryInstructionStorage,
     UID_RTBeamsTreatmentRecordStorage,
     UID_RTBrachyApplicationSetupDeliveryInstructionStorage,
@@ -666,7 +693,10 @@ const char* dcmAllStorageSOPClassUIDs[] = {
     UID_RTImageStorage,
     UID_RTIonBeamsTreatmentRecordStorage,
     UID_RTIonPlanStorage,
+    UID_RTPhysicianIntentStorage,
     UID_RTPlanStorage,
+    UID_RTRadiationSetStorage,
+    UID_RTSegmentAnnotationStorage,
     UID_RTStructureSetStorage,
     UID_RTTreatmentSummaryRecordStorage,
     UID_SecondaryCaptureImageStorage,
@@ -681,6 +711,7 @@ const char* dcmAllStorageSOPClassUIDs[] = {
     UID_SurfaceScanMeshStorage,
     UID_SurfaceScanPointCloudStorage,
     UID_SurfaceSegmentationStorage,
+    UID_TomotherapeuticRadiationStorage,
     UID_TractographyResultsStorage,
     UID_TwelveLeadECGWaveformStorage,
     UID_UltrasoundImageStorage,
@@ -881,10 +912,13 @@ const char* dcmLongSCUStorageSOPClassUIDs[] = {
 //  UID_AdvancedBlendingPresentationStateStorage,
 //  UID_BreastProjectionXRayImageStorageForPresentation,
 //  UID_BreastProjectionXRayImageStorageForProcessing,
+//  UID_CArmPhotonElectronRadiationStorage,
 //  UID_CompositingPlanarMPRVolumetricPresentationStateStorage,
 //  UID_ContentAssessmentResultsStorage,
 //  UID_CornealTopographyMapStorage,
 //  UID_CTPerformedProcedureProtocolStorage,
+//  UID_EncapsulatedMTLStorage,
+//  UID_EncapsulatedOBJStorage,
 //  UID_EncapsulatedSTLStorage,
 //  UID_ExtensibleSRStorage,
 //  UID_GrayscalePlanarMPRVolumetricPresentationStateStorage
@@ -893,10 +927,17 @@ const char* dcmLongSCUStorageSOPClassUIDs[] = {
 //  UID_OphthalmicOpticalCoherenceTomographyEnFaceImageStorage,
 //  UID_ParametricMapStorage,
 //  UID_PatientRadiationDoseSRStorage,
+//  UID_PerformedImagingAgentAdministrationSRStorage,
+//  UID_PlannedImagingAgentAdministrationSRStorage,
 //  UID_RadiopharmaceuticalRadiationDoseSRStorage,
+//  UID_RoboticArmRadiationStorage,
 //  UID_RTBrachyApplicationSetupDeliveryInstructionStorage,
+//  UID_RTPhysicianIntentStorage,
+//  UID_RTRadiationSetStorage,
+//  UID_RTSegmentAnnotationStorage,
 //  UID_SegmentedVolumeRenderingVolumetricPresentationStateStorage,
 //  UID_SimplifiedAdultEchoSRStorage,
+//  UID_TomotherapeuticRadiationStorage,
 //  UID_TractographyResultsStorage,
 //  UID_VolumeRenderingVolumetricPresentationStateStorage,
 //  UID_WideFieldOphthalmicPhotographyStereographicProjectionImageStorage,
@@ -1154,6 +1195,7 @@ static const DcmModalityTable modalities[] = {
     { UID_BreastProjectionXRayImageStorageForProcessing,           "BP",  4096 * 4096 * 2 },
     { UID_BreastTomosynthesisImageStorage,                         "BT",  4096 * 4096 * 2 },
     { UID_CardiacElectrophysiologyWaveformStorage,                 "WVc", 4096 },
+    { UID_CArmPhotonElectronRadiationStorage,                      "RRc", 4096 },
     { UID_ChestCADSRStorage,                                       "SRh", 4096 },
     { UID_ColonCADSRStorage,                                       "SRo", 4096 },
     { UID_ColorPaletteStorage,                                     "CP",  4096 },
@@ -1175,6 +1217,8 @@ static const DcmModalityTable modalities[] = {
     { UID_DigitalXRayImageStorageForPresentation,                  "DX",  2048 * 2048 * 2 },
     { UID_DigitalXRayImageStorageForProcessing,                    "DP",  2048 * 2048 * 2 },
     { UID_EncapsulatedCDAStorage,                                  "CDA", 4096 },
+    { UID_EncapsulatedMTLStorage,                                  "MTL", 4096 },
+    { UID_EncapsulatedOBJStorage,                                  "OBJ", 4096 },
     { UID_EncapsulatedPDFStorage,                                  "PDF", 1024 * 1024 },
     { UID_EncapsulatedSTLStorage,                                  "STL", 4096 },
     { UID_EnhancedCTImageStorage,                                  "CTe", 256 * 512 * 512 },
@@ -1225,6 +1269,8 @@ static const DcmModalityTable modalities[] = {
     { UID_OphthalmicVisualFieldStaticPerimetryMeasurementsStorage, "OPp", 4096 },
     { UID_ParametricMapStorage,                                    "PM",  256 * 256 * 4 },
     { UID_PatientRadiationDoseSRStorage,                           "SRq", 4096 },
+    { UID_PerformedImagingAgentAdministrationSRStorage,            "SRi", 4096 },
+    { UID_PlannedImagingAgentAdministrationSRStorage,              "SRj", 4096 },
     { UID_PositronEmissionTomographyImageStorage,                  "PI",  512 * 512 * 2 },
     { UID_ProcedureLogStorage,                                     "SRp", 4096 },
     { UID_ProtocolApprovalStorage,                                 "PA",  4096 },
@@ -1233,6 +1279,7 @@ static const DcmModalityTable modalities[] = {
     { UID_RawDataStorage,                                          "RAW", 512 * 512 * 256 },
     { UID_RealWorldValueMappingStorage,                            "RWM", 4096 },
     { UID_RespiratoryWaveformStorage,                              "WVr", 4096 },
+    { UID_RoboticArmRadiationStorage,                              "RRr", 4096 },
     { UID_RTBeamsDeliveryInstructionStorage,                       "RTd", 4096 },
     { UID_RTBeamsTreatmentRecordStorage,                           "RTb", 4096 },
     { UID_RTBrachyApplicationSetupDeliveryInstructionStorage,      "RTa", 4096 },
@@ -1242,6 +1289,9 @@ static const DcmModalityTable modalities[] = {
     { UID_RTIonBeamsTreatmentRecordStorage,                        "RTi", 4096 },
     { UID_RTIonPlanStorage,                                        "RPi", 4096 },
     { UID_RTPlanStorage,                                           "RP" , 4096 },
+    { UID_RTPhysicianIntentStorage,                                "RIp", 4096 },
+    { UID_RTRadiationSetStorage,                                   "RRs", 4096 },
+    { UID_RTSegmentAnnotationStorage,                              "RSa", 4096 },
     { UID_RTStructureSetStorage,                                   "RS",  4096 },
     { UID_RTTreatmentSummaryRecordStorage,                         "RTs", 4096 },
     { UID_SecondaryCaptureImageStorage,                            "SC",  512 * 512 * 2 },
@@ -1256,6 +1306,7 @@ static const DcmModalityTable modalities[] = {
     { UID_SurfaceScanMeshStorage,                                  "SSm", 4096 },
     { UID_SurfaceScanPointCloudStorage,                            "SSp", 4096 },
     { UID_SurfaceSegmentationStorage,                              "SGs", 4096 },
+    { UID_TomotherapeuticRadiationStorage,                         "RRt", 4096 },
     { UID_TractographyResultsStorage,                              "TR",  4096 },
     { UID_TwelveLeadECGWaveformStorage,                            "TLE", 4096 },
     { UID_UltrasoundImageStorage,                                  "US",  512 * 512 },
@@ -1566,14 +1617,14 @@ static long gethostid(void)
     /* get volume information of the system drive */
     char systemDrive[MAX_PATH];
     DWORD serialNumber = 0;
-    if (GetSystemDirectory(systemDrive, OFstatic_cast(UINT, sizeof(systemDrive))) >= 0)
+    if (GetSystemDirectoryA(systemDrive, OFstatic_cast(UINT, sizeof(systemDrive))) >= 0)
     {
         /* check for proper pathname */
         if ((strlen(systemDrive) >= 3) && (systemDrive[1] == ':') && (systemDrive[2] == '\\'))
         {
             /* truncate the pathname directly after the drive specification */
             systemDrive[3] = 0;
-            if (!GetVolumeInformation(systemDrive, NULL, 0, &serialNumber, NULL, NULL, NULL, 0))
+            if (!GetVolumeInformationA(systemDrive, NULL, 0, &serialNumber, NULL, NULL, NULL, 0))
                 serialNumber = 0;
         }
     }

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 1999-2018, OFFIS e.V.
+ *  Copyright (C) 1999-2020, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -543,11 +543,11 @@ static OFCondition updateJobList(
   const char *spoolFolder = dvi.getSpoolFolder();
 
 #ifdef HAVE_WINDOWS_H
-  WIN32_FIND_DATA stWin32FindData;
+  WIN32_FIND_DATAA stWin32FindData;
   OFString currentdir = spoolFolder;
   currentdir += "\\*";
 
-  HANDLE hFile = FindFirstFile(currentdir.c_str(), &stWin32FindData);
+  HANDLE hFile = FindFirstFileA(currentdir.c_str(), &stWin32FindData);
   int ret = (hFile != INVALID_HANDLE_VALUE);
   while (ret)
   {
@@ -595,7 +595,7 @@ static OFCondition updateJobList(
       }
 
 #ifdef HAVE_WINDOWS_H
-      ret = FindNextFile(hFile, &stWin32FindData);
+      ret = FindNextFileA(hFile, &stWin32FindData);
   } /* while */
   if(hFile != INVALID_HANDLE_VALUE)
   {
@@ -888,6 +888,7 @@ int main(int argc, char *argv[])
       DcmTLSSecurityProfile tlsProfile = TSP_Profile_BCP195;  // default
       if (profileName == "BCP195") tlsProfile = TSP_Profile_BCP195;
       else if (profileName == "BCP195-ND") tlsProfile = TSP_Profile_BCP195_ND;
+      else if (profileName == "BCP195-EX") tlsProfile = TSP_Profile_BCP195_Extended;
       else if (profileName == "AES") tlsProfile = TSP_Profile_AES;
       else if (profileName == "BASIC") tlsProfile = TSP_Profile_Basic;
       else if (profileName == "NULL") tlsProfile = TSP_Profile_IHE_ATNA_Unencrypted;
@@ -1066,7 +1067,7 @@ int main(int argc, char *argv[])
         OFStandard::sleep((unsigned int)opt_sleep);
         if (EC_Normal != updateJobList(jobList, dvi, terminateFlag, jobNamePrefix.c_str()))
         {
-          OFLOG_FATAL(dcmprscuLogger, "spooler: non recoverable error occured, terminating");
+          OFLOG_FATAL(dcmprscuLogger, "spooler: non recoverable error occurred, terminating");
           return 10;
         }
         // static OFCondition updateJobList(jobList, dvi, terminateFlag, jobNamePrefix.c_str());

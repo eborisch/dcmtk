@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2000-2017, OFFIS e.V.
+ *  Copyright (C) 2000-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -254,7 +254,7 @@ OFBool DSRCodedEntryValue::isEmpty() const
 
 OFBool DSRCodedEntryValue::isComplete() const
 {
-    return !CodeValue.empty() && !CodingSchemeDesignator.empty() && !CodeMeaning.empty();
+    return !CodeValue.empty() && (!CodingSchemeDesignator.empty() || (CodeValueType == DSRTypes::CVT_URN)) && !CodeMeaning.empty();
 }
 
 
@@ -277,7 +277,10 @@ void DSRCodedEntryValue::print(STD_NAMESPACE ostream &stream,
         stream << ",\"" << DSRTypes::convertToPrintString(CodeMeaning, printString) << "\")";
         if ((flags & DSRTypes::PF_indicateEnhancedEncodingMode) && usesEnhancedEncodingMode())
             stream << "*";
-    } else
+    }
+    else if ((flags & DSRTypes::PF_printEmptyCodes) && isEmpty())
+        stream << "empty code";
+    else
         stream << "invalid code";
 }
 
@@ -302,7 +305,12 @@ OFCondition DSRCodedEntryValue::readItem(DcmItem &dataset,
     } else
         CodeValueType = DSRTypes::CVT_Long;
     if (result.good())
-        result = DSRTypes::getAndCheckStringValueFromDataset(dataset, DCM_CodingSchemeDesignator, CodingSchemeDesignator, "1", "1", moduleName, acceptViolation);
+    {
+        if (CodeValueType == DSRTypes::CVT_URN)                     /* conditional or mandatory */
+            result = DSRTypes::getAndCheckStringValueFromDataset(dataset, DCM_CodingSchemeDesignator, CodingSchemeDesignator, "1", "1C", moduleName, acceptViolation);
+        else
+            result = DSRTypes::getAndCheckStringValueFromDataset(dataset, DCM_CodingSchemeDesignator, CodingSchemeDesignator, "1", "1", moduleName, acceptViolation);
+    }
     if (result.good())                                              /* conditional (type 1C) */
         DSRTypes::getAndCheckStringValueFromDataset(dataset, DCM_CodingSchemeVersion, CodingSchemeVersion, "1", "1C", moduleName);
     if (result.good())
@@ -445,7 +453,7 @@ OFCondition DSRCodedEntryValue::writeSequence(DcmItem &dataset,
 
 
 OFCondition DSRCodedEntryValue::writeSequenceItem(DcmItem &item,
-                                                  const DcmTagKey & /*tagKey*/)
+                                                  const DcmTagKey & /*tagKey*/) const
 {
     /* call the real function, which is "protected" */
     return writeItem(item);
@@ -475,8 +483,8 @@ OFCondition DSRCodedEntryValue::readXML(const DSRXMLDocument &doc,
                 /* check for known element tags */
                 if (doc.matchNode(cursor, "scheme"))
                 {
-                    doc.getStringFromNodeContent(doc.getNamedNode(cursor.getChild(), "designator"), CodingSchemeDesignator, NULL /*name*/, OFTrue /*encoding*/, OFFalse /*clearString*/);
-                    doc.getStringFromNodeContent(doc.getNamedNode(cursor.getChild(), "version", OFFalse /*required*/), CodingSchemeVersion, NULL /*name*/, OFTrue /*encoding*/, OFFalse /*clearString*/);
+                    doc.getStringFromNodeContent(doc.getNamedChildNode(cursor, "designator"), CodingSchemeDesignator, NULL /*name*/, OFTrue /*encoding*/, OFFalse /*clearString*/);
+                    doc.getStringFromNodeContent(doc.getNamedChildNode(cursor, "version", OFFalse /*required*/), CodingSchemeVersion, NULL /*name*/, OFTrue /*encoding*/, OFFalse /*clearString*/);
                 } else {
                     doc.getStringFromNodeContent(cursor, CodeValue, "value", OFTrue /*encoding*/, OFFalse /*clearString*/);
                     doc.getStringFromNodeContent(cursor, CodeMeaning, "meaning", OFTrue /*encoding*/, OFFalse /*clearString*/);
@@ -638,7 +646,7 @@ OFCondition DSRCodedEntryValue::setCode(const OFString &codeValue,
         result = checkCode(codeValue, codingSchemeDesignator, codingSchemeVersion, codeMeaning, actualCodeValueType);
     } else {
         /* make sure that the mandatory values are non-empty */
-        if (codeValue.empty() || codingSchemeDesignator.empty() || codeMeaning.empty())
+        if (codeValue.empty() || (codingSchemeDesignator.empty() && (actualCodeValueType != DSRTypes::CVT_URN)) || codeMeaning.empty())
             result = EC_IllegalParameter;
     }
     if (result.good())
@@ -760,12 +768,20 @@ OFCondition DSRCodedEntryValue::checkCode(const OFString &codeValue,
 {
     OFCondition result = EC_Normal;
     /* first, make sure that the mandatory values are non-empty and the type is valid */
-    if (codeValue.empty() || codingSchemeDesignator.empty() || codeMeaning.empty())
-        result = SR_EC_InvalidValue;
+    if (codeValueType == DSRTypes::CVT_URN)
+    {
+        /* CP-1913: Coding Scheme Version shall not be present if Coding Scheme Designator is absent */
+        if (codeValue.empty() || (codingSchemeDesignator.empty() && !codingSchemeVersion.empty()) || codeMeaning.empty())
+            result = SR_EC_InvalidValue;
+    }
     else if (codeValueType == DSRTypes::CVT_auto)
     {
         DCMSR_DEBUG("INTERNAL ERROR: DSRCodedEntryValue::checkCode() called with DSRTypes::CVT_auto");
         result = EC_IllegalCall;
+    } else {
+        /* short or long code value */
+        if (codeValue.empty() || codingSchemeDesignator.empty() || codeMeaning.empty())
+            result = SR_EC_InvalidValue;
     }
     /* then, check whether the passed values are valid with regards to VR and VM.
      * tbd: unfortunately, we do not know the character set, so "UNKNOWN" is used. */
@@ -792,8 +808,8 @@ OFCondition DSRCodedEntryValue::checkCode(const OFString &codeValue,
 DSRTypes::E_CodeValueType DSRCodedEntryValue::determineCodeValueType(const OFString &codeValue)
 {
     DSRTypes::E_CodeValueType codeValueType = DSRTypes::CVT_auto;
-    /* first, check for URN schema (tbd: also need to check for URLs?) */
-    if (codeValue.compare(0, 4, "urn:") == 0)
+    /* first, check for URN or URL scheme (not perfect but should do in most cases) */
+    if ((codeValue.compare(0, 4, "urn:") == 0) || (codeValue.find("://") != OFString_npos))
         codeValueType = DSRTypes::CVT_URN;
     /* then, check maximum value length (tbd: should be characters not bytes!) */
     else if (codeValue.length() > 16)
@@ -809,6 +825,6 @@ DSRTypes::E_CodeValueType DSRCodedEntryValue::determineCodeValueType(const OFStr
 STD_NAMESPACE ostream &operator<<(STD_NAMESPACE ostream &stream,
                                   const DSRCodedEntryValue& codedEntryValue)
 {
-    codedEntryValue.print(stream, OFTrue /*printCodeValue*/, 0 /*flags*/);
+    codedEntryValue.print(stream, OFTrue /*printCodeValue*/, DSRTypes::PF_printEmptyCodes /*flags*/);
     return stream;
 }

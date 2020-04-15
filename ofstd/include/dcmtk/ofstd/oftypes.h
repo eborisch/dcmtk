@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1997-2017, OFFIS e.V.
+ *  Copyright (C) 1997-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -71,18 +71,24 @@ inline std::ostream& operator<<( std::ostream& o, OFnullptr_t /* unused */ )
 #define INCLUDE_OSTREAM
 #define INCLUDE_CSTDINT
 #define INCLUDE_CSTDDEF
+#define INCLUDE_CINTTYPES
 #include "dcmtk/ofstd/ofstdinc.h"
 
 typedef signed char     Sint8;
 typedef unsigned char   Uint8;
 
+#ifdef PRIu32 /* if that macro exists, we also have int32_t et al */
+typedef int32_t         Sint32;
+typedef uint32_t        Uint32;
+#else /* defined(PRIu32) */
 #if SIZEOF_LONG == 8
 typedef signed int      Sint32;
 typedef unsigned int    Uint32;
-#else
+#else /* SIZEOF_LONG == 8 */
 typedef signed long     Sint32;
 typedef unsigned long   Uint32;
-#endif
+#endif /* SIZEOF_LONG == 8 */
+#endif /* defined(PRIu32) */
 
 typedef signed short    Sint16;
 typedef unsigned short  Uint16;
@@ -157,29 +163,9 @@ typedef Uint64 OFuintptr_t;
 
 // Definition of type OFBool
 
-#ifdef HAVE_CXX_BOOL
-
-#define OFBool bool
+typedef bool OFBool;
 #define OFTrue true
 #define OFFalse false
-
-#else
-
-/** the boolean type used throughout the DCMTK project. Mapped to the
- *  built-in type "bool" if the current C++ compiler supports it. Mapped
- *  to int for old-fashioned compilers which do not yet support bool.
- */
-typedef int OFBool;
-
-#ifndef OFTrue
-#define OFTrue (1)
-#endif
-
-#ifndef OFFalse
-#define OFFalse (0)
-#endif
-
-#endif
 
 #if defined(HAVE_TYPENAME)
 #define OFTypename typename

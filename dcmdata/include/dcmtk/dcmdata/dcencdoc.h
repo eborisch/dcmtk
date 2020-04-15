@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2018, OFFIS e.V.
+ *  Copyright (C) 2018-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -21,15 +21,19 @@
 
 #ifndef DCENCDOC_H
 #define DCENCDOC_H
+
 //make sure OS specific configuration is included first
 #include "dcmtk/config/osconfig.h"
-//for override keys
-#include "dcmtk/dcmdata/dcpath.h"
-#include "dcmtk/dcmdata/dctk.h"
-#include "dcmtk/dcmiod/iodcommn.h"
-#include "dcmtk/ofstd/ofconapp.h"
-#include "dcmtk/ofstd/ofxml.h"
+#include "dcmtk/ofstd/ofstring.h"     /* for class OFString */
+#include "dcmtk/ofstd/ofcond.h"       /* for class OFCondition */
+#include "dcmtk/dcmdata/dcdefine.h"   /* for DCMTK_DCMDATA_EXPORT */
+#include "dcmtk/dcmdata/dcfilefo.h"   /* for class DcmFileFormat */
+#include "dcmtk/ofstd/ofcmdln.h"      /* for OFCmdUnsignedInt */
 
+class XMLNode;
+class OFCommandLine;
+class OFConsoleApplication;
+class OFLogger;
 
 /** This class handles common functions of all command line applications
  *  for document encapsulation.
@@ -150,7 +154,7 @@ public:
     OFLogger& logger);
 
   /** Get study or series data from provided file. Generate UID if none present.
-   *  @param logger The logger of the application calling this method.
+   *  @param appLogger The logger of the application calling this method.
    *  @return EC_Normal if successful, an error code otherwise.
    */
   OFCondition createIdentifiers(OFLogger& appLogger);
@@ -211,7 +215,7 @@ public:
   OFString getFileType();
 
   /** Sets the current filetype.
-   *  @param fName the current filetype.
+   *  @param fType the current filetype.
    *  @return none.
    */
   void setFileType(OFString fType);

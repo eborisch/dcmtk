@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2003-2018, OFFIS e.V.
+ *  Copyright (C) 2003-2020, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -52,7 +52,27 @@ static char rcsid[] = "$dcmtk: " OFFIS_CONSOLE_APPLICATION " v"
 
 #ifdef WITH_LIBXML
 
+#ifdef __ibmxl__
+// IBM xlC defines __GNUC__ but does not support the GNUC extension
+// __attribute__ ((format (printf, 2, 3))).
+// This avoids a compiler warning in <libxml/parser.h>.
+#define LIBXML_ATTR_FORMAT(fmt,args)
+#endif
+
+// The libxml library also uses unicode. So we have to reuse some
+// workarounds for the ICU library here as well.
+// The type char16_t is only supported since C++11.
+#ifndef HAVE_CHAR16_T
+#define UCHAR_TYPE uint16_t
+#endif
+
+//If U_NOEXCEPT is not defined, ICU falls back to NOEXCEPT.
+#ifndef HAVE_CXX11
+#define U_NOEXCEPT
+#endif
+
 #include <libxml/parser.h>
+
 
 // stores pointer to character encoding handler
 static xmlCharEncodingHandlerPtr EncodingHandler = NULL;
@@ -173,7 +193,14 @@ static OFCondition createNewElement(xmlNodePtr current,
         DcmTagKey dcmTagKey;
         unsigned int group = 0xffff;
         unsigned int elem = 0xffff;
-        if (sscanf(OFreinterpret_cast(char *, elemTag), "%x,%x", &group, &elem ) == 2)
+        /* make sure that "tag" attribute exists */
+        if (elemTag == NULL)
+        {
+            OFLOG_WARN(xml2dcmLogger, "missing 'tag' attribute, ignoring node");
+            result = EC_InvalidTag;
+        }
+        /* determine group and element number from "tag" */
+        else if (sscanf(OFreinterpret_cast(char *, elemTag), "%x,%x", &group, &elem ) == 2)
         {
             dcmTagKey.set(OFstatic_cast(Uint16, group), OFstatic_cast(Uint16, elem));
             DcmTag dcmTag(dcmTagKey);
@@ -182,15 +209,22 @@ static OFCondition createNewElement(xmlNodePtr current,
             DcmEVR dcmEVR = dcmVR.getEVR();
             if (dcmEVR == EVR_UNKNOWN)
             {
-                OFLOG_WARN(xml2dcmLogger, "invalid 'vr' attribute (" << elemVR
-                    << ") for " << dcmTag << ", using unknown VR");
+                /* check whether "vr" attribute exists */
+                if (elemVR == NULL)
+                {
+                    OFLOG_WARN(xml2dcmLogger, "missing 'vr' attribute for " << dcmTag
+                        << ", using unknown VR");
+                } else {
+                    OFLOG_WARN(xml2dcmLogger, "invalid 'vr' attribute (" << elemVR
+                        << ") for " << dcmTag << ", using unknown VR");
+                }
             }
             /* check for correct vr */
             const DcmEVR tagEVR = dcmTag.getEVR();
             if ((tagEVR != dcmEVR) && (dcmEVR != EVR_UNKNOWN) && (tagEVR != EVR_UNKNOWN) &&
                 ((dcmTagKey != DCM_LUTData) || ((dcmEVR != EVR_US) && (dcmEVR != EVR_SS) && (dcmEVR != EVR_OW))) &&
                 ((tagEVR != EVR_xs) || ((dcmEVR != EVR_US) && (dcmEVR != EVR_SS))) &&
-                ((tagEVR != EVR_ox) || ((dcmEVR != EVR_OB) && (dcmEVR != EVR_OW))))
+                ((tagEVR != EVR_ox) || (tagEVR != EVR_px) || ((dcmEVR != EVR_OB) && (dcmEVR != EVR_OW))))
             {
                 OFLOG_WARN(xml2dcmLogger, "tag " << dcmTag << " has wrong VR (" << dcmVR.getVRName()
                     << "), correct is " << dcmTag.getVR().getVRName());
@@ -503,13 +537,20 @@ static OFCondition parseDataSet(DcmItem *dataset,
                         DcmPixelSequence *sequence = new DcmPixelSequence(DCM_PixelSequenceTag);
                         if (sequence != NULL)
                         {
-                            /* ... insert it into the dataset and proceed with the pixel items */
-                            OFstatic_cast(DcmPixelData *, newElem)->putOriginalRepresentation(xfer, NULL, sequence);
-                            parsePixelSequence(sequence, current->xmlChildrenNode);
+                            if (newElem->ident() == EVR_PixelData)
+                            {
+                                /* ... insert it into the dataset and proceed with the pixel items */
+                                OFstatic_cast(DcmPixelData *, newElem)->putOriginalRepresentation(xfer, NULL, sequence);
+                                parsePixelSequence(sequence, current->xmlChildrenNode);
+                            } else
+                                OFLOG_WARN(xml2dcmLogger, "wrong VR for 'sequence' element with pixel data, ignoring child nodes");
                         }
                     } else {
                         /* proceed parsing the items of the sequence */
-                        parseSequence(OFstatic_cast(DcmSequenceOfItems *, newElem), current->xmlChildrenNode, xfer);
+                        if (newElem->ident() == EVR_SQ)
+                            parseSequence(OFstatic_cast(DcmSequenceOfItems *, newElem), current->xmlChildrenNode, xfer);
+                        else
+                            OFLOG_WARN(xml2dcmLogger, "wrong VR for 'sequence' element, ignoring child nodes");
                     }
                 } else {
                     /* delete element if insertion failed */
@@ -892,10 +933,11 @@ int main(int argc, char *argv[])
     OFString tmpErrorString;
     /* initialize the XML library (only required for MT-safety) */
     xmlInitParser();
-    /* substitute default entities (XML mnenonics) */
-    xmlSubstituteEntitiesDefault(1);
+    /* do not substitute entities (other than the standard ones) */
+    xmlSubstituteEntitiesDefault(0);
     /* add line number to debug messages */
     xmlLineNumbersDefault(1);
+    /* enable libxml warnings and error messages */
     xmlGetWarningsDefaultValue = 1;
     xmlSetGenericErrorFunc(&tmpErrorString, errorFunction);
 

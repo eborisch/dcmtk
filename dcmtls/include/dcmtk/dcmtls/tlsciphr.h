@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2018, OFFIS e.V.
+ *  Copyright (C) 2018-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -81,6 +81,19 @@ enum DcmTLSSecurityProfile
    *  and thus guarantees the higher security level of BCP 195.
    */
   TSP_Profile_BCP195_ND,
+
+  /** DICOM Extended BCP 195 TLS Profile, based on RFC 7525.
+   *  This profile only negotiates TLS 1.2, and will not fall back to
+   *  previous TLS versions. It does NOT support TLS 1.3.
+   *  It supports the same set of ciphersuites as TSP_Profile_BCP195_ND,
+   *  plus TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 and TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256.
+   *  The other ciphersuites suggested by the profile (see DICOM Part 15, section B.11)
+   *  are not supported in OpenSSL 1.0.1 to 1.1.0.
+   *  This profile requires DHE keys of at least 2048 bits and ECDHE keys of at least 256 bits.
+   *  It does not provide backwards compatibility with the older Basic and AES profiles,
+   *  and thus guarantees the higher security level of BCP 195.
+   */
+  TSP_Profile_BCP195_Extended,
 
   /** IHE ATNA Profile for Unencrypted In-house Communication (retired).
    * This profile uses the ciphersuite SSL_RSA_WITH_NULL_SHA and TLS 1.0 or newer.
@@ -232,6 +245,14 @@ public:
    */
   DcmTransportLayerStatus setTLSProfile(DcmTLSSecurityProfile profile);
 
+  /** return the currently selected TLS profile
+   *  @return currently selected TLS profile
+   */
+  DcmTLSSecurityProfile getTLSProfile() const
+  {
+      return currentProfile;
+  }
+
   /** clear the current list of ciphersuites. Equivalent to
    *  calling setTLSProfile(TSP_Profile_None).
    */
@@ -273,6 +294,13 @@ public:
    *  @return true if we support unencrypted TLS, false otherwise
    */
   OFBool cipherNULLsupported() const;
+
+  /** checks if TLS 1.3 is enabled (permitted) for the currently selected
+   *  TLS security profile. Note that this does not imply that the underlying
+   *  OpenSSL library version actually supports TLS 1.3. That is checked elsewhere.
+   *  @return true if we support TLS 1.3, false otherwise
+   */
+  OFBool isTLS13Enabled() const;
 
   /** print a list of supported ciphersuites to the given output stream
    *  @param os output stream
@@ -387,6 +415,9 @@ private:
 
   /// currently selected DICOM TLS security profile
   DcmTLSSecurityProfile currentProfile;
+
+  /// indicator whether TLS 1.3 is enabled or disabled for the current profile
+   OFBool tls13_enabled;
 
   /** an array of booleans indicating which ciphersuites known to DCMTK are
    *  actually supported by the OpenSSL library we are using.

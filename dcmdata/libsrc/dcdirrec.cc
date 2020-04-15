@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2018, OFFIS e.V.
+ *  Copyright (C) 1994-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -103,7 +103,8 @@ static const char *DRTypeNames[] =
     "PLAN",
     "SURFACE SCAN",
     "TRACT",
-    "ASSESSMENT"
+    "ASSESSMENT",
+    "RADIOTHERAPY"
 };
 
 static const short DIM_OF_DRTypeNames = OFstatic_cast(short, (sizeof(DRTypeNames) / sizeof(DRTypeNames[0])));
@@ -436,6 +437,7 @@ OFCondition DcmDirectoryRecord::checkHierarchy(const E_DirRecType upperRecord,
                 case ERT_SurfaceScan:
                 case ERT_Tract:
                 case ERT_Assessment:
+                case ERT_Radiotherapy:
                 case ERT_Private:
                     l_error = EC_Normal;
                     break;
@@ -532,6 +534,7 @@ OFCondition DcmDirectoryRecord::checkHierarchy(const E_DirRecType upperRecord,
         case ERT_SurfaceScan:
         case ERT_Tract:
         case ERT_Assessment:
+        case ERT_Radiotherapy:
         case ERT_Private:
             switch (lowerRecord)
             {
@@ -1189,7 +1192,7 @@ OFCondition DcmDirectoryRecord::convertCharacterSet(DcmSpecificCharacterSet &con
 // ********************************
 
 
-void DcmDirectoryRecord::print(STD_NAMESPACE ostream&out,
+void DcmDirectoryRecord::print(STD_NAMESPACE ostream &out,
                                const size_t flags,
                                const int level,
                                const char *pixelFileName,

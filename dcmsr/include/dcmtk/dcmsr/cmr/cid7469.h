@@ -1,12 +1,12 @@
 /*
  *
- *  Copyright (C) 2015-2018, J. Riesmeier, Oldenburg, Germany
+ *  Copyright (C) 2015-2020, J. Riesmeier, Oldenburg, Germany
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  Header file for class CID7469_GenericIntensityAndSizeMeasurements
  *
- *  Generated automatically from DICOM PS 3.16-2018d
- *  File created on 2018-09-27 16:57:33 by J. Riesmeier
+ *  Generated automatically from DICOM PS 3.16-2020a
+ *  File created on 2020-02-04 12:04:05 by J. Riesmeier
  *
  */
 
@@ -40,29 +40,29 @@ class DCMTK_CMR_EXPORT CID7469_GenericIntensityAndSizeMeasurements
      */
     enum EnumType
     {
-        /// (F-65C50,SRT,"N-acetylaspartate"), included from CID 4033
+        /// (115391007,SCT,"N-acetylaspartate"), included from CID 4033
         NAcetylaspartate,
-        /// (F-61080,SRT,"Citrate"), included from CID 4033
+        /// (59351004,SCT,"Citrate"), included from CID 4033
         Citrate,
-        /// (F-61620,SRT,"Choline"), included from CID 4033
+        /// (65123005,SCT,"Choline"), included from CID 4033
         Choline,
-        /// (F-61380,SRT,"Creatine"), included from CID 4033
+        /// (14804005,SCT,"Creatine"), included from CID 4033
         Creatine,
         /// (113094,DCM,"Creatine and Choline"), included from CID 4033
         CreatineAndCholine,
-        /// (F-61760,SRT,"Lactate"), included from CID 4033
+        /// (83036002,SCT,"Lactate"), included from CID 4033
         Lactate,
-        /// (F-63600,SRT,"Lipid"), included from CID 4033
+        /// (70106000,SCT,"Lipid"), included from CID 4033
         Lipid,
         /// (113095,DCM,"Lipid and Lactate"), included from CID 4033
         LipidAndLactate,
         /// (113080,DCM,"Glutamate and glutamine"), included from CID 4033
         GlutamateAndGlutamine,
-        /// (F-64210,SRT,"Glutamine"), included from CID 4033
+        /// (25761002,SCT,"Glutamine"), included from CID 4033
         Glutamine,
-        /// (F-64460,SRT,"Tuarine"), included from CID 4033
+        /// (10944007,SCT,"Tuarine"), included from CID 4033
         Tuarine,
-        /// (F-61A90,SRT,"Inositol"), included from CID 4033
+        /// (72164009,SCT,"Inositol"), included from CID 4033
         Inositol,
         /// (113081,DCM,"Choline/Creatine Ratio"), included from CID 4033
         CholinePerCreatineRatio,
@@ -172,7 +172,7 @@ class DCMTK_CMR_EXPORT CID7469_GenericIntensityAndSizeMeasurements
         TissueVelocity,
         /// (110828,DCM,"Flow Velocity"), included from CID 7180
         FlowVelocity,
-        /// (P0-02241,SRT,"Power Doppler"), included from CID 7180
+        /// (425704008,SCT,"Power Doppler"), included from CID 7180
         PowerDoppler,
         /// (110829,DCM,"Flow Variance"), included from CID 7180
         FlowVariance,
@@ -262,14 +262,14 @@ class DCMTK_CMR_EXPORT CID7469_GenericIntensityAndSizeMeasurements
         Tau_m,
         /// (126331,DCM,"vp"), included from CID 4107
         Vp,
-        /// (113055,DCM,"Regional Cerebral Blood Flow"), included from CID 4108
-        RegionalCerebralBloodFlow,
-        /// (126390,DCM,"Regional Blood Flow"), included from CID 4108
-        RegionalBloodFlow,
-        /// (113056,DCM,"Regional Cerebral Blood Volume"), included from CID 4108
-        RegionalCerebralBloodVolume,
-        /// (126391,DCM,"Regional Blood Volume"), included from CID 4108
-        RegionalBloodVolume,
+        /// (126390,DCM,"Absolute Regional Blood Flow"), included from CID 4108
+        AbsoluteRegionalBloodFlow,
+        /// (126391,DCM,"Absolute Regional Blood Volume"), included from CID 4108
+        AbsoluteRegionalBloodVolume,
+        /// (126397,DCM,"Relative Regional Blood Flow"), included from CID 4108
+        RelativeRegionalBloodFlow,
+        /// (126398,DCM,"Relative Regional Blood Volume"), included from CID 4108
+        RelativeRegionalBloodVolume,
         /// (113052,DCM,"Mean Transit Time"), included from CID 4108
         MeanTransitTime,
         /// (113069,DCM,"Time To Peak"), included from CID 4108
@@ -326,7 +326,7 @@ class DCMTK_CMR_EXPORT CID7469_GenericIntensityAndSizeMeasurements
         AbsorbedDose,
         /// (128512,DCM,"Equivalent Dose"), included from CID 10070
         EquivalentDose,
-        /// (T-D008A,SRT,"Fat"), included from CID 7180
+        /// (256674009,SCT,"Fat"), included from CID 7180
         Fat,
         /// (129100,DCM,"Fat fraction"), included from CID 7180
         FatFraction,
@@ -342,47 +342,65 @@ class DCMTK_CMR_EXPORT CID7469_GenericIntensityAndSizeMeasurements
         SignalToNoise,
         /// (113066,DCM,"Time course of signal"), included from CID 7180
         TimeCourseOfSignal,
-        /// (C-10120,SRT,"Water"), included from CID 7180
+        /// (11713004,SCT,"Water"), included from CID 7180
         Water,
         /// (129103,DCM,"Water fraction"), included from CID 7180
         WaterFraction,
-        /// (G-D7FE,SRT,"Length"), included from CID 7470
+        /// (130086,DCM,"Relative Linear Stopping Power"), included from CID 7180
+        RelativeLinearStoppingPower,
+        /// (130402,DCM,"Class activation"), included from CID 217
+        ClassActivation,
+        /// (130403,DCM,"Gradient-weighted class activation"), included from CID 217
+        GradientWeightedClassActivation,
+        /// (130404,DCM,"Saliency"), included from CID 217
+        Saliency,
+        /// (410668003,SCT,"Length"), included from CID 7470
         Length,
         /// (121211,DCM,"Path length"), included from CID 7470
         PathLength,
         /// (121206,DCM,"Distance"), included from CID 7470
         Distance,
-        /// (G-A220,SRT,"Width"), included from CID 7470
+        /// (103355008,SCT,"Width"), included from CID 7470
         Width,
-        /// (G-D785,SRT,"Depth"), included from CID 7470
+        /// (131197000,SCT,"Depth"), included from CID 7470
         Depth,
-        /// (M-02550,SRT,"Diameter"), included from CID 7470
+        /// (81827009,SCT,"Diameter"), included from CID 7470
         Diameter,
-        /// (G-A185,SRT,"Long Axis"), included from CID 7470
+        /// (103339001,SCT,"Long Axis"), included from CID 7470
         LongAxis,
-        /// (G-A186,SRT,"Short Axis"), included from CID 7470
+        /// (103340004,SCT,"Short Axis"), included from CID 7470
         ShortAxis,
-        /// (G-A193,SRT,"Major Axis"), included from CID 7470
+        /// (131187009,SCT,"Major Axis"), included from CID 7470
         MajorAxis,
-        /// (G-A194,SRT,"Minor Axis"), included from CID 7470
+        /// (131188004,SCT,"Minor Axis"), included from CID 7470
         MinorAxis,
-        /// (G-A195,SRT,"Perpendicular Axis"), included from CID 7470
+        /// (131189007,SCT,"Perpendicular Axis"), included from CID 7470
         PerpendicularAxis,
-        /// (G-A196,SRT,"Radius"), included from CID 7470
+        /// (131190003,SCT,"Radius"), included from CID 7470
         Radius,
-        /// (G-A197,SRT,"Perimeter"), included from CID 7470
+        /// (131191004,SCT,"Perimeter"), included from CID 7470
         Perimeter,
-        /// (M-02560,SRT,"Circumference"), included from CID 7470
+        /// (74551000,SCT,"Circumference"), included from CID 7470
         Circumference,
-        /// (G-A198,SRT,"Diameter of circumscribed circle"), included from CID 7470
+        /// (131192006,SCT,"Diameter of circumscribed circle"), included from CID 7470
         DiameterOfCircumscribedCircle,
         /// (121207,DCM,"Height"), included from CID 7470
         Height,
-        /// (G-A166,SRT,"Area"), included from CID 7471
+        /// (L0JK,IBSI,"Maximum 3D Diameter of a Mesh"), included from CID 7470
+        Maximum3DDiameterOfAMesh,
+        /// (TDIC,IBSI,"Major Axis in 3D Length"), included from CID 7470
+        MajorAxisIn3DLength,
+        /// (P9VJ,IBSI,"Minor Axis in 3D Length"), included from CID 7470
+        MinorAxisIn3DLength,
+        /// (7J51,IBSI,"Least Axis in 3D Length"), included from CID 7470
+        LeastAxisIn3DLength,
+        /// (42798000,SCT,"Area"), included from CID 7471
         Area,
-        /// (G-A16A,SRT,"Area of defined region"), included from CID 7471
+        /// (131184002,SCT,"Area of defined region"), included from CID 7471
         AreaOfDefinedRegion,
-        /// (G-D705,SRT,"Volume"), included from CID 7472
+        /// (C0JK,IBSI,"Surface Area of Mesh"), included from CID 7471
+        SurfaceAreaOfMesh,
+        /// (118565006,SCT,"Volume"), included from CID 7472
         Volume,
         /// (121216,DCM,"Volume estimated from single 2D region"), included from CID 7472
         VolumeEstimatedFromSingle2DRegion,
@@ -397,7 +415,11 @@ class DCMTK_CMR_EXPORT CID7469_GenericIntensityAndSizeMeasurements
         /// (121220,DCM,"Volume of circumscribed sphere"), included from CID 7472
         VolumeOfCircumscribedSphere,
         /// (121219,DCM,"Volume of bounding three dimensional region"), included from CID 7472
-        VolumeOfBoundingThreeDimensionalRegion
+        VolumeOfBoundingThreeDimensionalRegion,
+        /// (RNU0,IBSI,"Volume of Mesh"), included from CID 7472
+        VolumeOfMesh,
+        /// (YEKZ,IBSI,"Volume from Voxel Summation"), included from CID 7472
+        VolumeFromVoxelSummation
     };
 
     /** (default) constructor

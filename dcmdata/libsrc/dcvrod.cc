@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2013-2016, OFFIS e.V.
+ *  Copyright (C) 2013-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -23,6 +23,7 @@
 #include "dcmtk/config/osconfig.h"    /* make sure OS specific configuration is included first */
 
 #include "dcmtk/ofstd/ofuuid.h"
+#include "dcmtk/ofstd/ofstd.h"
 
 #include "dcmtk/dcmdata/dcvrod.h"
 #include "dcmtk/dcmdata/dcswap.h"
@@ -188,4 +189,24 @@ OFCondition DcmOtherDouble::writeJson(STD_NAMESPACE ostream &out,
     writeJsonCloser(out, format);
     /* always report success */
     return EC_Normal;
+}
+
+
+// ********************************
+
+
+OFCondition DcmOtherDouble::createFloat64Array(const Uint32 numDoubles,
+                                               Float64 *&doubleVals)
+{
+    Uint32 bytesRequired = 0;
+    /* make sure that max length is not exceeded */
+    if (OFStandard::safeMult(numDoubles, OFstatic_cast(Uint32, sizeof(Float64)), bytesRequired))
+        errorFlag = createEmptyValue(bytesRequired);
+    else
+        errorFlag = EC_ElemLengthExceeds32BitField;
+    if (errorFlag.good())
+        doubleVals = OFstatic_cast(Float64 *, this->getValue());
+    else
+        doubleVals = NULL;
+    return errorFlag;
 }

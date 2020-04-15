@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1999-2018, OFFIS e.V.
+ *  Copyright (C) 1999-2020, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -547,7 +547,7 @@ static OFCondition storeSCP(
     dcmtk_flock(lockfd, LOCK_EX);
 #endif
 
-    /* we must still retrieve the data set even if some error has occured */
+    /* we must still retrieve the data set even if some error has occurred */
     StoreContext context(dbhandle, status, imageFileName, &dcmff, opt_correctUIDPadding);
 
     if (opt_bitpreserving)
@@ -799,6 +799,7 @@ static void terminateAllReceivers(DVConfiguration& dvi)
         DcmTLSSecurityProfile tlsProfile = TSP_Profile_BCP195;  // default
         if (profileName == "BCP195") tlsProfile = TSP_Profile_BCP195;
         else if (profileName == "BCP195-ND") tlsProfile = TSP_Profile_BCP195_ND;
+        else if (profileName == "BCP195-EX") tlsProfile = TSP_Profile_BCP195_Extended;
         else if (profileName == "AES") tlsProfile = TSP_Profile_AES;
         else if (profileName == "BASIC") tlsProfile = TSP_Profile_Basic;
         else if (profileName == "NULL") tlsProfile = TSP_Profile_IHE_ATNA_Unencrypted;
@@ -1348,15 +1349,15 @@ int main(int argc, char *argv[])
             // initialize startup info
             const char *receiver_application = dvi.getReceiverName();
             PROCESS_INFORMATION procinfo;
-            STARTUPINFO sinfo;
+            STARTUPINFOA sinfo;
             OFBitmanipTemplate<char>::zeroMem((char *)&sinfo, sizeof(sinfo));
             sinfo.cb = sizeof(sinfo);
             char commandline[4096];
             sprintf(commandline, "%s %s %s", receiver_application, opt_cfgName, opt_cfgID);
 #ifdef DEBUG
-            if (CreateProcess(NULL, commandline, NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo))
+            if (CreateProcessA(NULL, commandline, NULL, NULL, 0, 0, NULL, NULL, &sinfo, &procinfo))
 #else
-            if (CreateProcess(NULL, commandline, NULL, NULL, 0, DETACHED_PROCESS, NULL, NULL, &sinfo, &procinfo))
+            if (CreateProcessA(NULL, commandline, NULL, NULL, 0, DETACHED_PROCESS, NULL, NULL, &sinfo, &procinfo))
 #endif
             {
 #ifdef WITH_OPENSSL

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2018, OFFIS e.V.
+ *  Copyright (C) 1994-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -63,7 +63,6 @@ class DCMTK_DCMDATA_EXPORT DcmByteString: public DcmElement
     /** constructor.
      *  Create new element from given tag.
      *  @param tag DICOM tag for the new element
-     *  @param len value length for the new element
      */
     DcmByteString(const DcmTag &tag);
 
@@ -171,7 +170,7 @@ class DCMTK_DCMDATA_EXPORT DcmByteString: public DcmElement
      *  @param pixelFileName not used
      *  @param pixelCounter not used
      */
-    virtual void print(STD_NAMESPACE ostream&out,
+    virtual void print(STD_NAMESPACE ostream &out,
                        const size_t flags = 0,
                        const int level = 0,
                        const char *pixelFileName = NULL,
@@ -247,6 +246,14 @@ class DCMTK_DCMDATA_EXPORT DcmByteString: public DcmElement
      *  @return status, EC_Normal if successful, an error code otherwise
      */
     virtual OFCondition putString(const char *stringVal);
+
+    /** set element value at specific VM position in the given character string.
+     *  @param stringVal input character string (possibly multi-valued)
+     *  @param pos position (0..vm) where the value should be inserted
+     *  @return status, EC_Normal if successful, an error code otherwise
+     */
+    virtual OFCondition putOFStringAtPos(const OFString& stringVal,
+                                         const unsigned long pos = 0);
 
     /** set element value from the given character string.
      *  The length of the string has to be specified explicitly. The string can, therefore,

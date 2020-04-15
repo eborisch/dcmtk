@@ -128,6 +128,9 @@ other network options:
   -to   --timeout  [s]econds: integer (default: unlimited)
           timeout for connection requests
 
+  -ts   --socket-timeout  [s]econds: integer (default: 60)
+          timeout for network socket (0 for none)
+
   -ta   --acse-timeout  [s]econds: integer (default: 30)
           timeout for ACSE messages
 
@@ -194,6 +197,9 @@ security profile:
 
   +py   --profile-bcp195-nd
           Non-downgrading BCP 195 TLS Profile
+
+  +pz   --profile-bcp195-ex
+          Extended BCP 195 TLS Profile
 
   +pb   --profile-basic
           Basic TLS Secure Transport Connection Profile (retired)
@@ -264,6 +270,10 @@ C-FIND responses:
 
   -Xs   --extract-xml-single  [f]ilename: string
           extract all responses to given XML file f
+
+  -Xlo  --limit-output  [n]umber: integer
+          limit number of responses extracted to file to n
+          (default: unlimited)
 \endverbatim
 
 \section findscu_notes NOTES
@@ -332,7 +342,13 @@ the logger can be enforced with option \e --show-responses.
 In addition, the response datasets can also be extracted as individual DICOM
 files (using option \e --extract) or XML files (using option \e --extract-xml).
 The output format of the latter is described by the file <em>dcm2xml.dtd</em>
-(starting with top-level element "data-set").
+(starting with top-level element "data-set").  For XML files, the Specific
+Character Set is mapped automatically to an appropriate XML encoding.  If this
+is not possible, e.g. in case of ISO 2022 character sets, non-ASCII characters
+and those below #32 are stored as "&#nnn;" where "nnn" refers to the numeric
+character code.  Please note that this might lead to invalid character entity
+references (such as "&#27;" for ESC) and will cause most XML parsers to reject
+the document.
 
 Alternatively, all response datasets of an association can be extracted to a
 single XML file using option \e --extract-xml-single.  The top-level element of
@@ -439,6 +455,6 @@ It is an error if no data dictionary can be loaded.
 
 \section findscu_copyright COPYRIGHT
 
-Copyright (C) 1994-2018 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
+Copyright (C) 1994-2020 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
 
 */
